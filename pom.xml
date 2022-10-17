@@ -346,7 +346,7 @@
                             <!-- 外部依赖jar包的最终位置 -->
                             <classpathPrefix>lib/</classpathPrefix>
                             <!--指定jar程序入口-->
-                            <mainClass>com.rzk.Application</mainClass>
+                            <mainClass>com.rzk.RzkCommunityApplication</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
