@@ -92,7 +92,9 @@ public class GetMessageDetailController {
 
     public List<Message> getImage(List<Message> allMessage, UserService userService, MessageImagesService messageImagesService) {
         for (int i = 0; i < allMessage.size(); i++) {
-            allMessage.get(i).setUser(userService.getById(allMessage.get(i).getUserId()));
+            QueryWrapper<User> queryWrapperUserId = new QueryWrapper<>();
+            queryWrapperUserId.eq("user_id",allMessage.get(i).getUserId());
+            allMessage.get(i).setUser(userService.getOne(queryWrapperUserId));
             MessageImages messageImages = new MessageImages();
             messageImages.setMessageId(allMessage.get(i).getMessageId());
             QueryWrapper<MessageImages> queryWrapper = new QueryWrapper<>();
@@ -169,8 +171,10 @@ public class GetMessageDetailController {
 
     @PostMapping("/getMessage/getMessageDetailByUserId/{userId}/{pageNumber}")
     public List<Message> getMessageDetailByUserId(@PathVariable Integer userId, @PathVariable Integer pageNumber) {
+        QueryWrapper<User> queryWrapperUserList= new QueryWrapper<>();
+        queryWrapperUserList.eq("user_id",userId);
 
-        User user = userService.getById(userId);
+        User user = userService.getOne(queryWrapperUserList);
 
         if (user.getUserIsAdmin() == 2) {
             PageHelper.startPage(pageNumber, 5);

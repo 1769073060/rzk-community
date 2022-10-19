@@ -29,7 +29,7 @@ public class ScreenShotUtils {
 
 
     public static void main(String[] args) {
-        Map<String, Object> screenshot = getScreenshot("http://124.221.132.14:9999/rzk/vod_1654629487979.mp4");
+        Map<String, Object> screenshot = getScreenshot("http://com.rzk.mapper.dao.:9999/rzk/vod_1654629487979.mp4");
         System.out.println(screenshot);
         System.out.println("1341654");
     }
