@@ -1,6 +1,7 @@
 package com.rzk.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.rzk.config.VerifyUser;
 import com.rzk.pojo.Attend;
 import com.rzk.pojo.Comment;
 import com.rzk.pojo.NewMessage;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+
 
 @RestController
 public class AddCommentController {
@@ -31,21 +34,18 @@ public class AddCommentController {
     @Autowired
     private AttendService attendService;
 
+
     @Transactional
     @PostMapping("/addComment/{userId}/{messageId}/{messageUserId}")
     public ResponseResult addComment(@PathVariable Integer userId, @RequestBody String userComment, @PathVariable Integer messageId, @PathVariable Integer messageUserId) {
+        VerifyUser verifyUser = new VerifyUser();
 
-        User user = userService.getOne(new QueryWrapper<User>().eq("user_id",userId));
-        if (user == null) {
-            //用户为空
-            return  new ResponseResult(MsgConsts.DATA_ERROR, null,null);
-
+        //校验
+        ResponseResult responseResult = verifyUser.VerifyUserIdAndUserAllow(userId,userService);
+        if (responseResult.getCode() == 400) {
+            return responseResult;
         }
 
-        if(user.getUserAllow()!=1){
-            return  new ResponseResult(MsgConsts.DISALE_PERMISSIONS, null,null);
-
-        }
 
         Comment comment = new Comment();
         comment.setMessageId(messageId);

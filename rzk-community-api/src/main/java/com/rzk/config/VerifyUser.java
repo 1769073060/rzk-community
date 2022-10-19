@@ -5,6 +5,7 @@ import com.rzk.pojo.User;
 import com.rzk.service.UserService;
 import com.rzk.utils.status.MsgConsts;
 import com.rzk.utils.status.ResponseResult;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 
@@ -18,19 +19,18 @@ import javax.annotation.Resource;
  */
 public class VerifyUser {
 
-    @Resource
-    private UserService userService;
 
-    public ResponseResult VerifyUserId(Integer userId){
+
+    public ResponseResult VerifyUserId(Integer userId,UserService userService){
         User user = userService.getOne(new QueryWrapper<User>().eq("user_id",userId));
         if (user==null){
             //用户为空
             return  new ResponseResult(MsgConsts.DATA_ERROR, null,null);
-        }return null;
+        }return new ResponseResult(MsgConsts.SUCCESS_CODE, null,null);
 
     }
 
-    public ResponseResult VerifyUserIdAndUserAllow(Integer userId){
+    public ResponseResult VerifyUserIdAndUserAllow(Integer userId,UserService userService){
         User user = userService.getOne(new QueryWrapper<User>().eq("user_id",userId));
         if (user==null){
             //用户为空

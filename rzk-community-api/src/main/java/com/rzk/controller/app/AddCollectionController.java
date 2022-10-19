@@ -18,8 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
- 
 
+
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class AddCollectionController {
     private MessageImagesService messageImagesService;
     @Autowired
     private MessageService messageDetailService;
-    private VerifyUser verifyUser;
+
 
     @PostMapping("/getMessage/getAllCollectionMessageByUserId/{userId}/{pageNumber}")
 
@@ -64,13 +65,12 @@ public class AddCollectionController {
     @PostMapping("/addCollection/{userId}/{messageId}")
     public ResponseResult addCollection(@PathVariable Integer userId, @PathVariable Integer messageId) {
 
-
+        VerifyUser verifyUser = new VerifyUser();
         //校验
-        ResponseResult responseResult = verifyUser.VerifyUserId(userId);
-        if (responseResult!=null){
+        ResponseResult responseResult = verifyUser.VerifyUserId(userId,userService);
+        if (responseResult.getCode() == 400) {
             return responseResult;
         }
-
 
         Collect collect = new Collect();
         collect.setUserId(userId);

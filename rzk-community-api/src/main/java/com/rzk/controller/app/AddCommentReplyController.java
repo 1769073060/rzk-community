@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+
 @RestController
 @Slf4j
 public class AddCommentReplyController {
@@ -33,14 +35,16 @@ public class AddCommentReplyController {
     private NewMessageService newMessageService;
     @Autowired
     private AttendService attendService;
-    private VerifyUser verifyUser;
+
 
     @Transactional
     @PostMapping("/addCommentReply/{messageId}")
     public ResponseResult addCommentReply(@PathVariable Integer messageId, @RequestBody CommentReply commentReply) {
+        VerifyUser verifyUser = new VerifyUser();
+
         //校验
-        ResponseResult responseResult = verifyUser.VerifyUserIdAndUserAllow(commentReply.getReplayUserId());
-        if (responseResult != null) {
+        ResponseResult responseResult = verifyUser.VerifyUserIdAndUserAllow(commentReply.getReplayUserId(),userService);
+        if (responseResult.getCode() == 400) {
             return responseResult;
         }
         commentReplyService.save(commentReply);
