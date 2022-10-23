@@ -56,4 +56,10 @@ public interface UserService extends IService<User> {
      */
     public boolean isUserLikeVideo(String userId,String videoId);
 
+    /**
+     * 是否是粉丝
+     *
+     */
+    public  boolean queryIfFollow(String userId,String fanId);
+
 }

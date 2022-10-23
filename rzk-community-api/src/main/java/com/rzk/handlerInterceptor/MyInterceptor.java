@@ -1,14 +1,21 @@
 package com.rzk.handlerInterceptor;
 
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.rzk.pojo.Audience;
-import com.rzk.pojo.WXSessionModel;
+
+import com.rzk.pojo.User;
+import com.rzk.service.UserService;
 import com.rzk.utils.JWTUtil;
-import com.rzk.utils.common.JsonUtils;
-import com.rzk.utils.status.CodeEnum;
-import com.rzk.utils.status.ResponseData;
-import io.jsonwebtoken.Claims;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import com.rzk.utils.JwtTokenUtil;
+import com.rzk.utils.status.MsgConsts;
+import com.rzk.utils.status.ResponseResult;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.annotation.Resource;
@@ -17,48 +24,86 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-
+@Component
 public class MyInterceptor implements HandlerInterceptor {
 
 
     @Resource
     private Audience audience;
-
+    @Resource
+    private UserService userService;
+    @Resource
+    private JwtTokenUtil jwtTokenUtil;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         System.out.println("拦截器");
-        //等到请求头信息authorization信息
-        final String authHeader = request.getHeader("authorization");
+        String token = request.getHeader("authorization");// 从 http 请求头中取出 token
+        System.out.println("token{}"+token);
+        // 执行认证
+        if (token == null) {
+            throw new RuntimeException("无token,请重新登录");
+        }
+        // 获取 token 中的 openId
+        String openId;
+        try {
+            openId = JWT.decode(token).getAudience().get(0);
+        } catch (JWTDecodeException j) {
+            throw new RuntimeException("401");
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_openid", openId);
+        User user = userService.getOne(queryWrapper);
+        if (user == null) {
+            throw new RuntimeException("用户不存在，请重新登录");
 
-        if ("OPTIONS".equals(request.getMethod())) {
-            //测试服务器支持方法
-            response.setStatus(HttpServletResponse.SC_OK);
-            return false;
-        } else {
-            final String token = authHeader;//获取 token
-            try {
-                if (audience == null) {//获取配置信息
-                    BeanFactory factory = WebApplicationContextUtils.getRequiredWebApplicationContext(request.getServletContext());
-                    audience = (Audience) factory.getBean("audience");
-                }
-                final Claims claims = JWTUtil.parseJWT(token, audience.getBase64Secret());//解密token,获取token内容
-                if (claims == null) {//解析失败,token有问题
-                    this.returnJson(response, JsonUtils.objectToJson(ResponseData.out(CodeEnum.SIGNATURE_NOT_ALLOW, "令牌出现错误")));
-                    return false;
-                }
-                WXSessionModel user = JsonUtils.jsonToPojo(claims.get("user").toString(), WXSessionModel.class);//解析储存的user信息
-
-                request.getSession().setAttribute("user", user);
-
-            } catch (final Exception e) {
-                this.returnJson(response, JsonUtils.objectToJson(ResponseData.out(CodeEnum.SIGNATURE_NOT_ALLOW, "出现致命错误")));
-                return false;
-            }
+        }
+        // 验证 token
+        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(user.getUserId().toString())).build();
+        try {
+            jwtVerifier.verify(token);
+        } catch (JWTVerificationException e) {
+            throw new RuntimeException("401");
+        }
+        boolean tokenExpired = jwtTokenUtil.isTokenExpired(token);
+        if (!tokenExpired){
+            throw new RuntimeException("401");
         }
         return true;
     }
+        /**
+         //等到请求头信息authorization信息
+         final String authHeader = request.getHeader("authorization");
+
+         if ("OPTIONS".equals(request.getMethod())) {
+         //测试服务器支持方法
+         response.setStatus(HttpServletResponse.SC_OK);
+         return false;
+         } else {
+         final String token = authHeader;//获取 token
+         try {
+         if (audience == null) {//获取配置信息
+         BeanFactory factory = WebApplicationContextUtils.getRequiredWebApplicationContext(request.getServletContext());
+         audience = (Audience) factory.getBean("audience");
+         }
+         final Claims claims = JWTUtil.parseJWT(token, audience.getBase64Secret());//解密token,获取token内容
+         if (claims == null) {//解析失败,token有问题
+         this.returnJson(response, JsonUtils.objectToJson(ResponseData.out(CodeEnum.SIGNATURE_NOT_ALLOW, "令牌出现错误")));
+         return false;
+         }
+         WXSessionModel user = JsonUtils.jsonToPojo(claims.get("user").toString(), WXSessionModel.class);//解析储存的user信息
+
+         request.getSession().setAttribute("user", user);
+
+         } catch (final Exception e) {
+         this.returnJson(response, JsonUtils.objectToJson(ResponseData.out(CodeEnum.SIGNATURE_NOT_ALLOW, "出现致命错误")));
+         return false;
+         }
+         }
+         return true;
+         **/
+
 
     /**
      * 返回客户端数据
@@ -79,9 +124,5 @@ public class MyInterceptor implements HandlerInterceptor {
         }
     }
 
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
-            throws Exception {
-    }
 
 }

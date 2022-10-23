@@ -60,7 +60,7 @@ public interface VideosVoMapper  {
 
   @Select("<script>" +
           "select v.*,u.face_image  from videos v left join  users u on u.user_id = v.user_id " +
-          "where 1=1 and v.user_id in (select l.user_id from users_fans l where l.fan_id = #{userId} )"+
+          "where 1=1 and v.user_id in (select l.user_id from user_fans l where l.fan_id = #{userId} )"+
           " and v.status =1 and u.user_hidden = 0  order by v.create_time desc"+
           "</script>")
   @Results({

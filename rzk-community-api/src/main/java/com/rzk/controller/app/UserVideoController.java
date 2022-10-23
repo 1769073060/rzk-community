@@ -166,7 +166,7 @@ public class UserVideoController {
     @PostMapping(value = "/upLoadVideos", headers = "content-type=multipart/form-data")
     public JSONResult upLoadVideos(String userId, double videoSeconds, int videoWidth, int videoHeight, String desc, @ApiParam(value = "视频", required = true) MultipartFile video) throws Exception {
         if (StringUtils.isBlank(userId)) {
-            return JSONResult.errorMsg("用户id不能为空");
+            return JSONResult.errorTokenMsg("用户id不能为空");
         }
 
         //截取视频名
@@ -228,6 +228,7 @@ public class UserVideoController {
 
         return JSONResult.ok(videosid);
     }
+
 
     /**
      * 上传

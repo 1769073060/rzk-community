@@ -14,11 +14,13 @@ public enum CodeEnum {
     DISABLE_PERMISSIONS(301, "禁用权限"),
     BODY_NOT_MATCH(400, "请求的数据格式不正确"),
     SIGNATURE_NOT_MATCH(401, "请求的数字签名不匹配"),
+    NOT_LOGIN(402, "未登录,请登录后再试"),
     SIGNATURE_NOT_ALLOW(403, "没有权限"),
     SIGNATURE_EXIT(403, "退出"),
     NOT_FOUND(404, "未找到该资源"),
     INTERNAL_SERVER_ERROR(500, "服务器内部错误"),
     TRESPASS(1000, "非法入侵"),
+    TOKENEPIRED(1001, "token失效,请重新登录"),
     FAIL(-1, "发生未知错误"),
     SERVER_BUSY(503, "服务器正忙，请稍后再试!");
 

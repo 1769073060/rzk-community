@@ -44,7 +44,10 @@ public class GetMessageDetailController {
         List<Message> allMessage = pageInfo.getList();
         for (int i = 0; i < allMessage.size(); i++) {
             System.out.println("allMessage============="+allMessage);
-            allMessage.get(i).setUser(userService.getById(allMessage.get(i).getUserId()));
+            QueryWrapper<User> queryWrapperUser = new QueryWrapper<>();
+            queryWrapperUser.eq("user_id",allMessage.get(i).getUserId());
+
+            allMessage.get(i).setUser(userService.getOne(queryWrapperUser));
             MessageImages messageImages = new MessageImages();
             messageImages.setMessageId(allMessage.get(i).getMessageId());
             QueryWrapper<MessageImages> queryWrapper = new QueryWrapper<>();

@@ -51,4 +51,11 @@ public class User{
      * 
      */
 	private Date userCreatTime;
+
+
+	private Integer fansCounts;
+
+	private Integer followCounts;
+
+	private Integer userStatus;
 }

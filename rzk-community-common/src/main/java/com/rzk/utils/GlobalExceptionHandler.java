@@ -55,6 +55,24 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResponseData exceptionHandler(HttpServletRequest req, Exception e) {
         logger.error("未知异常！原因是:", e);
+        System.out.println("e.getMessage()"+e.getMessage());
+        if ("无token,请重新登录".equals(e.getMessage())){
+            logger.info("进入"+e.getMessage());
+            return ResponseData.error(CodeEnum.NOT_LOGIN.getCode(), CodeEnum.NOT_LOGIN.getMsg());
+
+        }
+        if ("401".equals(e.getMessage())){
+            logger.info("进入"+e.getMessage());
+            return ResponseData.error(CodeEnum.NOT_LOGIN.getCode(), CodeEnum.NOT_LOGIN.getMsg());
+
+        }
+        if ("1001".equals(e.getMessage())){
+            logger.info("进入"+e.getMessage());
+            return ResponseData.error(CodeEnum.TOKENEPIRED.getCode(), CodeEnum.TOKENEPIRED.getMsg());
+
+        }
+        logger.info("进入"+e.getMessage());
+
         return ResponseData.error(CodeEnum.INTERNAL_SERVER_ERROR.getCode(), CodeEnum.INTERNAL_SERVER_ERROR.getMsg());
     }
 }

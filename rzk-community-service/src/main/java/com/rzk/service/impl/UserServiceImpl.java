@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.rzk.mapper.dao.UserDao;
+import com.rzk.mapper.dao.UserFansMapper;
 import com.rzk.mapper.dao.UsersLikeVideosDao;
 import com.rzk.pojo.*;
 import com.rzk.service.UserService;
@@ -30,6 +31,8 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
     private UserDao userMapper;
     @Resource
     private UsersLikeVideosDao usersLikeVideosDao;
+    @Resource
+    private UserFansMapper userFansMapper;
     /**
      * 新用户插入
      *
@@ -98,5 +101,16 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         return false;
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS )
+    @Override
+    public boolean queryIfFollow(String userId, String fanId) {
 
+        UserFansExample userFansExample = new UserFansExample();
+        userFansExample.createCriteria().andFanIdEqualTo(fanId).andUserIdEqualTo(userId);
+        List<UserFans> userFansList  = userFansMapper.selectByExample(userFansExample);
+        if (userFansList!= null && !userFansList.isEmpty() && userFansList.size()>0 ){
+            return true;
+        }
+        return false;
+    }
 }

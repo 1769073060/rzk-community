@@ -43,3 +43,5 @@ ENTRYPOINT java
 -Djava.security.egd=file:/dev/./urandom
 -Duser.timezone=GMT+08 ${JAVA_OPTS} -jar /app.jar
 
+
+
