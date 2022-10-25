@@ -1,5 +1,6 @@
 package com.rzk.controller.app;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.rzk.pojo.Attend;
@@ -51,7 +52,9 @@ public class GetAttendMessageController {
         List<Message> list1 = new ArrayList<Message>();
         for (int i = 0; i < list.size(); i++) {
             Integer messageId = list.get(i).getMessageId();
-            Message message = messageDetailService.getById(messageId);
+            QueryWrapper<Message> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("message_id",messageId);
+            Message message = messageDetailService.getOne(queryWrapper);
             list1.add(message);
         }
         return new GetMessageDetailController().getImage(list1, userService, messageImagesService);

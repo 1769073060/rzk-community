@@ -32,8 +32,8 @@
         <selectKey resultType="Integer" keyProperty="messageId">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        INSERT INTO message (message.user_id_anonymity,mango_message.user_id,mango_message.category_id,
-        mango_message.user_phone, mango_message.user_major, mango_message.user_level,mango_message.message_detail)
+        INSERT INTO message (message.user_id_anonymity,message.user_id,message.category_id,
+        message.user_phone, message.user_major, message.user_level,message.message_detail)
         VALUES
         (#{userIdAnonymity},#{userId},#{categoryId},#{userPhone},#{userMajor},#{userLevel},#{messageDetail})
     </insert>
@@ -50,7 +50,7 @@
     <select id="getMessageByCategoryAndKeyword" resultMap="BaseResultMap">
 
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE mango_message.category_id=#{id}  AND  ( message.message_detail  LIKE BINARY CONCAT('%',('${keyword}'),'%') ) order by message.message_creat_time DESC
+        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE message.category_id=#{id}  AND  ( message.message_detail  LIKE BINARY CONCAT('%',('${keyword}'),'%') ) order by message.message_creat_time DESC
 
     </select>
     <select id="getMessageDetailByUserId" resultMap="BaseResultMap">
@@ -60,13 +60,13 @@
     <select id="getMessageByKeyword" resultMap="BaseResultMap">
 
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE ( mango_message.message_detail  LIKE BINARY CONCAT('%',('${keyword}'),'%') ) order by message.message_creat_time DESC
+        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE ( message.message_detail  LIKE BINARY CONCAT('%',('${keyword}'),'%') ) order by message.message_creat_time DESC
 
     </select>
 
 
     <delete id="deleteCommentAndReply" >
 
-delete  mango_comment,mango_comment_reply  from mango_comment left join mango_comment_reply on mango_comment.comment_id=mango_comment_reply.comment_id where mango_comment.message_id=#{id}
+delete  comment,comment_reply  from comment left join comment_reply on comment.comment_id=comment_reply.comment_id where comment.message_id=#{id}
 </delete>
 </mapper>
