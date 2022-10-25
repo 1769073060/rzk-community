@@ -31,6 +31,9 @@ public class JwtTokenUtil {
     private Long expiration;
 
     public static void main(String[] args) {
+        String s = generateToken("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvbUN4UjQzbmpQWXBOZWFYcUw3cHRNc29fcW40IiwiY3JlYXRlZCI6MTY2NjU5NzA1OTg5MSwiZXhwIjoxNjY3MjAxODU5fQ.IFX1_QkLT6D8jKODZCmM_eR7W4jMhO2OkO18yFq51mh9UjPN8WwwHg2DAc5cWHNSPI9JtFYOok7Sjzd83yHdpA\n");
+
+        System.out.println(s);
         Claims claims = getClaimsFromTokens("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvbUN4UjQzbmpQWXBOZWFYcUw3cHRNc29fcW40IiwiY3JlYXRlZCI6MTY2NjUzMjA0NTk5MSwiZXhwIjoxNjY3MTM2ODQ2fQ.vsJql6cG1rzG4UMiCcLHnILxMqbWeTrt2gnS8alO-taTjDifyLL0IvivyOmTUhhAqWVNRXNzbU5QoDiE1Qq_yQ");
         System.out.println(claims.getExpiration());
         System.out.println(claims);

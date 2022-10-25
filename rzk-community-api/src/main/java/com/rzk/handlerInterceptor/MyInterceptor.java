@@ -15,6 +15,7 @@ import com.rzk.utils.JWTUtil;
 import com.rzk.utils.JwtTokenUtil;
 import com.rzk.utils.status.MsgConsts;
 import com.rzk.utils.status.ResponseResult;
+import io.jsonwebtoken.Claims;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -48,7 +49,9 @@ public class MyInterceptor implements HandlerInterceptor {
         // 获取 token 中的 openId
         String openId;
         try {
-            openId = JWT.decode(token).getAudience().get(0);
+            Claims claimsFromToken = jwtTokenUtil.getClaimsFromToken(token);
+            openId = claimsFromToken.get("sub").toString();
+            System.out.println(openId);
         } catch (JWTDecodeException j) {
             throw new RuntimeException("401");
         }
@@ -60,16 +63,18 @@ public class MyInterceptor implements HandlerInterceptor {
 
         }
         // 验证 token
+        /**
         JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(user.getUserId().toString())).build();
         try {
             jwtVerifier.verify(token);
         } catch (JWTVerificationException e) {
             throw new RuntimeException("401");
         }
+
         boolean tokenExpired = jwtTokenUtil.isTokenExpired(token);
         if (!tokenExpired){
             throw new RuntimeException("401");
-        }
+        }**/
         return true;
     }
         /**
