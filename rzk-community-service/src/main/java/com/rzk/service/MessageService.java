@@ -16,7 +16,7 @@ public interface MessageService extends IService<Message> {
 
     public Message getLostMessage();
 
-    public Integer insertMessageDetail(Message mangoMessage) ;
+    public Integer insertMessageDetail(Message message) ;
 
     public List<Message> getAllMessage();
     /**

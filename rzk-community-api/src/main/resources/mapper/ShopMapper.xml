@@ -33,13 +33,13 @@
         <result column="shop_creat_time" jdbcType="TIMESTAMP" property="shopCreatTime"/>
         <!--<collection property="shopImages" ofType="String"-->
                     <!--javaType="list">-->
-            <!--<result column="mango_shop_images.shop_images" javaType="String"></result>-->
+            <!--<result column="shop_images.shop_images" javaType="String"></result>-->
         <!--</collection>-->
 
         <collection property="shopImages" ofType="com.rzk.pojo.ShopBusiness" javaType="list">
-            <result column="mango_shop_business.shop_goods_image" javaType="String"></result>
-            <result column="mango_shop_business.shop_goods_title" javaType="String"></result>
-            <result column="mango_shop_business.shop_goods_price" javaType="String"></result>
+            <result column="shop_business.shop_goods_image" javaType="String"></result>
+            <result column="shop_business.shop_goods_title" javaType="String"></result>
+            <result column="shop_business.shop_goods_price" javaType="String"></result>
         </collection>
 
     </resultMap>

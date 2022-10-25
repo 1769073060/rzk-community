@@ -24,10 +24,10 @@ import java.util.Map;
 public class AttendServiceImpl extends ServiceImpl<AttendDao, Attend> implements AttendService {
 
     @Autowired
-    private AttendDao mangoAttendMapper;
+    private AttendDao attendMapper;
 
     public List<Attend> getAllAttendMessageByUserId(Integer id) {
-        return mangoAttendMapper.getAllAttendMessageByUserId(id);
+        return attendMapper.getAllAttendMessageByUserId(id);
     }
 
 
