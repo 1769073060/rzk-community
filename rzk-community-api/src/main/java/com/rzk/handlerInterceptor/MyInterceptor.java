@@ -52,7 +52,7 @@ public class MyInterceptor implements HandlerInterceptor {
             Claims claimsFromToken = jwtTokenUtil.getClaimsFromToken(token);
             openId = claimsFromToken.get("sub").toString();
             System.out.println(openId);
-        } catch (JWTDecodeException j) { 
+        } catch (JWTDecodeException j) {
             throw new RuntimeException("401");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
