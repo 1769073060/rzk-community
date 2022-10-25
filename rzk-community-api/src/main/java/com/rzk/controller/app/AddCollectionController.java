@@ -38,7 +38,6 @@ public class AddCollectionController {
 
 
     @PostMapping("/getMessage/getAllCollectionMessageByUserId/{userId}/{pageNumber}")
-
     public List<Message> getAllCollectionMessageByUserId(@PathVariable Integer userId, @PathVariable Integer pageNumber) {
         PageHelper.startPage(pageNumber, 5);
         PageInfo<Collect> pageInfo = new PageInfo<Collect>(collectService.getAllCollectionMessageByUserId(userId));

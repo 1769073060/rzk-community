@@ -22,10 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -151,7 +148,58 @@ public class UserVideoController {
         return imgPath;
     }
 
+    @ApiImplicitParam(name = "userId", value = "用户的id", required = true, dataType = "String", paramType = "query")
+    @PostMapping("/upLoadImage")
+    public JSONResult upLoadImage(String userId, @RequestParam("file") MultipartFile image) throws Exception {
+        if (StringUtils.isBlank(userId)) {
+            return JSONResult.errorMsg("用户id不能为空");
+        }
+        if (image.isEmpty()) {
+            return JSONResult.errorMsg("不能上传空文件哦");
+        }
+        //图片上传路径
+        //String fileDownloadPath = "C:\\lnsf_mod_dev";
+        //String fileDownloadPath = "/opt/lnsf_mod_dev";
+        //图片保存路径
+        //String fileUploadPath ="/"+userId+"/image";
+        String uploadFile=null;
+        if (image != null && !image.isEmpty()) {
 
+            String imageName = image.getOriginalFilename();
+            if (StringUtils.isNotBlank(imageName)) {
+
+                String date = DateUtil.formatDate(new Date());
+                String filename = DateUtil.currentSeconds() + image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf("."));
+                String imgName = userId + "/" + "img" + "/" + date + "/" + filename;
+                logger.info("imgName"+imgName);
+                minIoClientUpload(image.getInputStream(), imgName);
+                uploadFile =  "/" + bucketName + "/" + imgName;
+                String videoUrl = endpoint + "/" + bucketName + "/" + imgName;
+                //获取视频的第一帧图片输出流
+                InputStream first = MinioUtils.randomGrabberFFmpegImage(videoUrl);
+                //获取文件名
+                String fileName = videoUrl.substring(videoUrl.lastIndexOf("/"), videoUrl.lastIndexOf(".")).concat(".jpg");
+                //将流转化为multipartFile
+                MultipartFile multipartFile = new MockMultipartFile("file", fileName, "image/jpg", first);
+
+                String pictureName = minioUtils.upload(multipartFile);
+                String pictureUrl = endpoint + "/" + bucketName + "/" + pictureName;
+
+
+                //图片上传最终路径
+                //图片最终	保存路径
+
+            }
+        } else {
+            return JSONResult.errorMsg("上传功能出错");
+        }
+
+//        User users = new Users();
+//        users.setId(userId);
+//        users.setFaceImage(uploadFile);
+//        usersService.updateUsersInfo(users);
+        return JSONResult.ok(uploadFile);
+    }
 
 
 

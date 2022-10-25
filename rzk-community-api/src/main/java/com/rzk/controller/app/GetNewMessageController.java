@@ -1,5 +1,6 @@
 package com.rzk.controller.app;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.rzk.pojo.NewMessage;
@@ -25,7 +26,9 @@ public class GetNewMessageController {
 
     @PostMapping("/getMessage/getAllNewMessage/{userId}/{pageNumber}")
     public List<NewMessage> getAllNewMessage(@PathVariable Integer userId, @PathVariable Integer pageNumber) {
-        User user = userService.getById(userId);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id",userId);
+        User user = userService.getOne(queryWrapper);
         if (user == null) {
             return null;
         }
