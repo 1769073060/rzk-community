@@ -42,7 +42,7 @@ public class AddMessageDetailController {
     @Transactional
     @PostMapping("/addMessage/{userId}")
     public BaseResponse addMessage(@PathVariable Integer userId, @RequestBody Message message) {
-        log.info("addMessage:userId{}"+userId);
+        log.info("addMessage:message{}"+userId);
         log.info("addMessage:message{}"+message);
         //检查用户权限
 
@@ -59,14 +59,19 @@ public class AddMessageDetailController {
 
         List<String> resultImage = message.getResultImage();
 
-        messageDetailService.save(message);
+        Integer messageId = messageDetailService.addMessage(message);
+
+        if (messageId==1){
+            //QueryWrapper<Message> queryWrapperMessageId = new QueryWrapper<>();
+            //queryWrapperMessageId.eq("message_id",)
+        }
 
         for (int i = 0; i < resultImage.size(); i++) {
             MessageImages messageImages = new MessageImages();
             if (resultImage.size()>0){
                 messageImages.setImageUrl(resultImage.get(i));
             }
-            messageImages.setMessageId(message.getMessageId());
+            messageImages.setMessageId(messageId);
             messageImagesService.save(messageImages);
         }
 

@@ -18,6 +18,8 @@ public interface MessageService extends IService<Message> {
 
     public Integer insertMessageDetail(Message message) ;
 
+    Integer addMessage(Message message);
+
     public List<Message> getAllMessage();
     /**
      * 查询分类所有
@@ -48,5 +50,7 @@ public interface MessageService extends IService<Message> {
      * 删除对应信息下的所有评论以及回复
      */
     public void deleteCommentAndReply(Integer messageId);
+
+
 
 }

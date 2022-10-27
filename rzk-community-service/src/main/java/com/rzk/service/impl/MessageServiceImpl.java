@@ -33,6 +33,14 @@ public class MessageServiceImpl extends ServiceImpl<MessageDao, Message> impleme
         return messageMapper.insertMessageDetail(message);
     }
 
+    @Override
+    public Integer addMessage(Message message) {
+        int insert = messageMapper.insert(message);
+        if (insert>0){
+            return message.getMessageId();
+        }return 0;
+    }
+
     public List<Message> getAllMessage() {
         return messageMapper.getAllMessage();
     }

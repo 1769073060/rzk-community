@@ -1,6 +1,8 @@
 package com.rzk.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
  
 import lombok.Data;
@@ -24,6 +26,7 @@ public class Message{
     /**
      * 
      */
+	@TableId(value = "message_id",type= IdType.AUTO)//需要在实体类的主键属性上添加此句
 	private Integer messageId;
     /**
      * 
