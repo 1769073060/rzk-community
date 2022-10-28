@@ -39,7 +39,7 @@ public class VerifyUser {
         if(user.getUserAllow()!=1){
             return  new ResponseResult(MsgConsts.DISALE_PERMISSIONS, null,null);
         }
-        return null;
+        return new ResponseResult(MsgConsts.SUCCESS_CODE, null,null);
     }
 
 
