@@ -10,6 +10,7 @@ import com.rzk.service.AttendService;
 import com.rzk.service.CommentService;
 import com.rzk.service.NewMessageService;
 import com.rzk.service.UserService;
+import com.rzk.utils.BadWordUtils;
 import com.rzk.utils.status.MsgConsts;
 import com.rzk.utils.status.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,8 @@ public class AddCommentController {
     private NewMessageService newMessageService;
     @Autowired
     private AttendService attendService;
-
+    @Autowired
+    private BadWordUtils badWordUtils;
 
     @Transactional
     @PostMapping("/addComment/{userId}/{messageId}/{messageUserId}")
@@ -45,19 +47,21 @@ public class AddCommentController {
         if (responseResult.getCode() == 400) {
             return responseResult;
         }
-
+        //检查是否需要替换敏感词
+        String filterStr = badWordUtils.replaceSensitive(userComment);
 
         Comment comment = new Comment();
         comment.setMessageId(messageId);
         comment.setUserId(userId);
-        comment.setCommentDetail(userComment);
+        comment.setCommentDetail(filterStr);
+
         commentService.save(comment);
 
         if(userId!=messageUserId) {
             NewMessage newMessage = new NewMessage();
             newMessage.setUserId(messageUserId);
             newMessage.setNewMessageType(1);
-            newMessage.setNewMessageDetail(userComment);
+            newMessage.setNewMessageDetail(filterStr);
             newMessage.setMessageId(messageId);
             newMessageService.save(newMessage);
         }

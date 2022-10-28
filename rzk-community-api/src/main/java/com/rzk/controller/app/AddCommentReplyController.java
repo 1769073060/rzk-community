@@ -65,7 +65,7 @@ public class AddCommentReplyController {
             newMessage.setUserId(commentReply.getReceiveUserId());
             newMessage.setNewMessageType(2);
             newMessage.setMessageId(messageId);
-            newMessage.setNewMessageDetail(commentReply.getReplyDetail());
+            newMessage.setNewMessageDetail(filterStr);
             newMessageService.save(newMessage);
         }
         Attend attend = new Attend();
