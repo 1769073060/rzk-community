@@ -1,18 +1,28 @@
 package com.rzk.utils;
 
+
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.stereotype.Component;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.*;
-
+@Slf4j
+@Component
 public class BadWordUtils {
     /**
      * 敏感词匹配规则
      */
     public static final int MinMatchTYpe = 1;      //最小匹配规则，如：敏感词库["中国","中国人"]，语句："我是中国人"，匹配结果：我是[中国]人
     public static final int MaxMatchType = 2;      //最大匹配规则，如：敏感词库["中国","中国人"]，语句："我是中国人"，匹配结果：我是[中国人]
-
+    @Value("${fileText.path}")
+    private String txtFile;
     /**
      * 敏感词集合
      */
@@ -260,9 +270,10 @@ public class BadWordUtils {
      *
      * @return 读取成功返回set集合 否则抛出异常
      */
-    public static Set<String> readResource() throws Exception {
+    public Set<String> readResource() throws Exception {
         //String name ="C:\\lnsf_mod_dev\\badword.txt";
-        String name ="/opt/jar/badword.txt";
+        String name ="C:\\home\\badword.txt";
+        //String name =txtFile;
         //存放文件内容的set集合
         Set<String> set = null;
         //获取文件的路径
@@ -275,7 +286,7 @@ public class BadWordUtils {
         //判断文件是否存在
         if(file.isFile() && file.exists()){
 
-            read=new BufferedReader(new InputStreamReader(new FileInputStream(file),"GB2312"));
+            read=new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
             //window为GB2312而Centos上编码为UTF-8
             //read=new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
             //初始化set集合
@@ -302,25 +313,84 @@ public class BadWordUtils {
         return set;
     }
 
-    public static void main(String[] args) throws Exception {
+
+    public String replaceSensitive(String content){
+        Set<String> sensitiveWordSet = null;
+        try {
+            sensitiveWordSet = readResource();
+        } catch (Exception e) {
+            log.info("-----------------------初始化名词库失败--------------------------");
+            e.printStackTrace();
+        }
+        //初始化敏感词库
+        BadWordUtils.init(sensitiveWordSet);
+        String filterStr = BadWordUtils.replaceSensitiveWord(content, '*');
+        return filterStr;
+
+    }
+
+    /**
+     * 读取敏感资源文件
+     *
+     *
+     * @return 读取成功返回set集合 否则抛出异常
+     */
+    public static Set<String> readResourceStatic() throws Exception {
+        String name ="C:\\home\\badword.txt";
+        //String name =txtFile;
+        //存放文件内容的set集合
+        Set<String> set = null;
+        //获取文件的路径
+        //String path = Thread.currentThread().getContextClassLoader().getResource(name).getPath();
+        //String path = Thread.currentThread().getContextClassLoader().getResource(name).getPath();
+        //读取文件
+        File file = new File(name);
+        //建立读取流
+        BufferedReader read=null;
+        //判断文件是否存在
+        if(file.isFile() && file.exists()){
+
+            read=new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
+            //window为GB2312而Centos上编码为UTF-8
+            //read=new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
+            //初始化set集合
+            set = new HashSet<String>();
+            //缓冲区读取流
+            BufferedReader bufferedReader = new BufferedReader(read);
+
+            //循环读取文件中内容，每次读取一行内容
+            String txt = null;
+            while((txt = bufferedReader.readLine()) != null){
+                //读取文件，将文件内容放入到set中
+
+                set.add(txt);
+            }
+            Iterator<String> iterator = set.iterator();
+            while (iterator.hasNext()){
+                System.out.println(iterator.next());
+            }
+        }
+        else {
+            System.out.println("异常{}请检查是否有该文件");
+            throw new Exception();
+        }
+        read.close();
+        return set;
+    }
+
+    @Test
+    public void test1() throws Exception {
+
 
         //Set<String> sensitiveWordSet = new HashSet<>();
 
         Set<String> sensitiveWordSet=readResource();
-        sensitiveWordSet.add("太多");
-        sensitiveWordSet.add("爱恋");
-        sensitiveWordSet.add("静静");
-        sensitiveWordSet.add("哈哈");
-        sensitiveWordSet.add("啦啦");
-        sensitiveWordSet.add("感动");
-        sensitiveWordSet.add("发呆");
-        sensitiveWordSet.add("妈滚");
         System.err.println(sensitiveWordSet.size());
         //初始化敏感词库
         BadWordUtils.init(sensitiveWordSet);
 
         System.out.println("敏感词的数量：" + BadWordUtils.sensitiveWordMap.size());
-        String string = "太多的妈滚伤感情怀也许只局限于饲养基地 荧幕中的情节胡锦涛。"
+        String string = "太多的你妈滚伤感情怀也许只局限于饲养基地 荧幕中的情节胡锦涛。"
                 + "然后我们的扮演的角色就是跟随着主人公的喜红客联盟 怒哀乐而过于牵强的把自己的情感也附加于银幕情节中，然后感动就流泪，"
                 + "难过就躺在某一个人的怀里尽情的阐述心扉或者手机卡复制器一个贱人一杯红酒一部电影在夜 深人静的晚上，关上电话静静的发呆着。";
         System.out.println("待检测语句字数：" + string.length());

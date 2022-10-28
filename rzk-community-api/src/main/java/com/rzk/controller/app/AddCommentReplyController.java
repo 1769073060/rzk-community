@@ -7,6 +7,7 @@ import com.rzk.service.AttendService;
 import com.rzk.service.CommentReplyService;
 import com.rzk.service.NewMessageService;
 import com.rzk.service.UserService;
+import com.rzk.utils.BadWordUtils;
 import com.rzk.utils.status.MsgConsts;
 import com.rzk.utils.status.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,8 @@ public class AddCommentReplyController {
     private NewMessageService newMessageService;
     @Autowired
     private AttendService attendService;
-
+    @Autowired
+    private BadWordUtils badWordUtils;
 
     @Transactional
     @PostMapping("/addCommentReply/{messageId}")
@@ -47,6 +49,9 @@ public class AddCommentReplyController {
         if (responseResult.getCode() == 400) {
             return responseResult;
         }
+        //检查是否需要替换敏感词
+        String filterStr = badWordUtils.replaceSensitive(commentReply.getReplyDetail());
+        commentReply.setReplyDetail(filterStr);
         commentReplyService.save(commentReply);
 
         if (commentReply.getReceiveUserId() == commentReply.getReplayUserId()) {

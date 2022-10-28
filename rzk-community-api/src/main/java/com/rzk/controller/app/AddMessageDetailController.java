@@ -7,6 +7,7 @@ import com.rzk.pojo.User;
 import com.rzk.service.MessageImagesService;
 import com.rzk.service.MessageService;
 import com.rzk.service.UserService;
+import com.rzk.utils.BadWordUtils;
 import com.rzk.utils.status.BaseResponse;
 import com.rzk.utils.status.CodeEnum;
 import com.rzk.utils.status.ResponseData;
@@ -18,7 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 @Slf4j
 @RestController
@@ -29,7 +33,8 @@ public class AddMessageDetailController {
     private MessageService messageDetailService;
     @Autowired
     private com.rzk.service.UserService userService;
-
+    @Autowired
+    private BadWordUtils badWordUtils;
 
     /**
     @Transactional
@@ -58,7 +63,16 @@ public class AddMessageDetailController {
 
 
         List<String> resultImage = message.getResultImage();
-
+        Set<String> sensitiveWordSet = null;
+        try {
+            sensitiveWordSet = badWordUtils.readResource();
+        } catch (Exception e) {
+            log.info("-----------------------初始化名词库失败--------------------------");
+            e.printStackTrace();
+        }
+        //检查是否需要替换敏感词
+        String filterStr = badWordUtils.replaceSensitive(message.getMessageDetail());
+        message.setMessageDetail(filterStr);
         Integer messageId = messageDetailService.addMessage(message);
 
         if (messageId==1){
