@@ -272,7 +272,7 @@ public class BadWordUtils {
      */
     public Set<String> readResource() throws Exception {
         //String name ="C:\\lnsf_mod_dev\\badword.txt";
-        String name ="C:\\home\\badword.txt";
+        String name =txtFile;
         //String name =txtFile;
         //存放文件内容的set集合
         Set<String> set = null;
