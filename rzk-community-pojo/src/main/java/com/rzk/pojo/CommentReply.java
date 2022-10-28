@@ -1,5 +1,6 @@
 package com.rzk.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
  
 import lombok.Data;
@@ -55,4 +56,7 @@ public class CommentReply{
      * 
      */
 	private Date replyTime;
+
+	@TableField(exist = false)
+	private String userAvatar;
 }

@@ -6,14 +6,17 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.rzk.pojo.*;
 import com.rzk.service.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+@Slf4j
 @RestController
 public class GetMessageDetailController {
 
@@ -160,9 +163,22 @@ public class GetMessageDetailController {
             CommentReply commentReply = new CommentReply();
             commentReply.setCommentId(comments.get(i).getCommentId());
             QueryWrapper<CommentReply> queryWrapper2= new QueryWrapper<>();
-            queryWrapper2.eq("comment_id",comment.getMessageId());
+            log.info("循环子评论{}"+comments.get(i).getCommentId());
 
-            comments.get(i).setCommentReplies(commentReplyService.list(queryWrapper2));
+            queryWrapper2.eq("comment_id",comments.get(i).getCommentId());
+            List<CommentReply> commentReplyLists = commentReplyService.list(queryWrapper2);
+            List<CommentReply> commentReplyList = new ArrayList<>();
+            if (commentReplyLists.size()>0){
+                //循环获取用户头像
+                for (CommentReply reply : commentReplyLists) {
+                    QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+                    userQueryWrapper.eq("user_id",reply.getReplayUserId());
+                    User serviceOne = userService.getOne(userQueryWrapper);
+                    reply.setUserAvatar(serviceOne.getUserAvatar());
+                    commentReplyList.add(reply);
+                }
+            }
+            comments.get(i).setCommentReplies(commentReplyList);
             QueryWrapper<User> queryWrapperUserList= new QueryWrapper<>();
             queryWrapperUserList.eq("user_id",comments.get(i).getUserId());
 
