@@ -2,17 +2,16 @@ package com.rzk.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.rzk.config.login.IsLogin;
-import com.rzk.pojo.vo.PublisherVideos;
+
 import com.rzk.pojo.vo.UsersVo;
 import com.rzk.utils.JSONResult;
 import com.rzk.utils.JsonUtils;
 import com.rzk.utils.JwtTokenUtil;
-import com.rzk.utils.TokenUtil;
 import com.rzk.utils.common.HttpClientUtil;
 import com.rzk.utils.status.MsgConsts;
 import com.rzk.utils.status.ResponseData;
 import com.rzk.utils.status.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +30,7 @@ import java.util.Map;
 
 import static com.rzk.utils.status.CodeEnum.*;
 
+@Slf4j
 @RestController
 public class LoginController {
     @Autowired
@@ -53,6 +53,7 @@ public class LoginController {
     @Transactional
     @PostMapping("/Login")
     public ResponseResult Login(String code, @RequestBody User user) {
+        log.info("获取登录用户信息user{}"+user);
         //      url: 'https://api.weixin.qq.com/sns/jscode2session?appid='+appid+'&secret='+secret+'&js_code='+code+'&grant_type=authorization_code',
         String url = "https://api.weixin.qq.com/sns/jscode2session?appid="+wxMessage.getWxId()+"&secret="+wxMessage.getWxSecret()+"&js_code="+code+"&grant_type=authorization_code";
         Map<String,Object> map = new HashMap<>();
