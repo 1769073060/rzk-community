@@ -55,7 +55,7 @@ public class LoginController {
     public ResponseResult Login(String code, @RequestBody User user) {
         //      url: 'https://api.weixin.qq.com/sns/jscode2session?appid='+appid+'&secret='+secret+'&js_code='+code+'&grant_type=authorization_code',
         String url = "https://api.weixin.qq.com/sns/jscode2session?appid="+wxMessage.getWxId()+"&secret="+wxMessage.getWxSecret()+"&js_code="+code+"&grant_type=authorization_code";
-        Map map = new HashMap<>();
+        Map<String,Object> map = new HashMap<>();
         String token = null;
         String wxResult = HttpClientUtil.doGet(url);
         System.out.println("登陆后显示："+wxResult);

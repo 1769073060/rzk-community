@@ -8,9 +8,7 @@ import com.rzk.service.MessageImagesService;
 import com.rzk.service.MessageService;
 import com.rzk.service.UserService;
 import com.rzk.utils.BadWordUtils;
-import com.rzk.utils.status.BaseResponse;
-import com.rzk.utils.status.CodeEnum;
-import com.rzk.utils.status.ResponseData;
+import com.rzk.utils.status.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +44,7 @@ public class AddMessageDetailController {
      **/
     @Transactional
     @PostMapping("/addMessage/{userId}")
-    public BaseResponse addMessage(@PathVariable Integer userId, @RequestBody Message message) {
+    public ResponseResult addMessage(@PathVariable Integer userId, @RequestBody Message message) {
         log.info("addMessage:message{}"+userId);
         log.info("addMessage:message{}"+message);
         //检查用户权限
@@ -55,10 +53,11 @@ public class AddMessageDetailController {
         queryWrapper.eq("user_id",message.getUserId());
         User user = userService.getOne(queryWrapper);
         if (userId == null) {
-            return ResponseData.out(CodeEnum.TRESPASS);
+            return new ResponseResult(CodeEnum.TRESPASS.getCode(), CodeEnum.TRESPASS.getMsg(), CodeEnum.TRESPASS.getMsg());
         }
         if (user.getUserAllow()!=-1) {
-            return ResponseData.out(CodeEnum.DISABLE_PERMISSIONS);
+            return new ResponseResult(CodeEnum.DISABLE_PERMISSIONS.getCode(), CodeEnum.DISABLE_PERMISSIONS.getMsg(), CodeEnum.DISABLE_PERMISSIONS.getMsg());
+
         }
 
 
@@ -88,8 +87,7 @@ public class AddMessageDetailController {
             messageImages.setMessageId(messageId);
             messageImagesService.save(messageImages);
         }
-
-        return ResponseData.success("添加成功");
+        return new ResponseResult(CodeEnum.SUCCESS.getCode(), CodeEnum.SUCCESS.getMsg(), CodeEnum.SUCCESS.getMsg());
 
     }
 
