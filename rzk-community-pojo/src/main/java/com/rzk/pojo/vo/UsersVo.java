@@ -4,17 +4,26 @@ package com.rzk.pojo.vo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Component;
 
 @ApiModel(value = "用户对象",description = "这是用户对象")
 @Component
+@AllArgsConstructor
+@Data
+@NoArgsConstructor
 public class UsersVo {
     @ApiModelProperty(hidden = true)
     @Id
     private String id;
     @ApiModelProperty(value = "用户名" ,name = "username",example = "rzkuser",required = true)
     private String username;
+    private String userNickname;
+    private Integer userAllow;
+    private String userAvatar;
     @JsonIgnore
     @ApiModelProperty(value = "密码" ,name = "password",example = "123456",required = true)
     private String password;

@@ -1,6 +1,7 @@
 package com.rzk.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.rzk.config.VerifyUser;
@@ -98,7 +99,9 @@ public class AddCollectionController {
         Collect collect = new Collect();
         collect.setUserId(userId);
         collect.setMessageId(messageId);
-        collectService.removeById(collect);
+        UpdateWrapper<Collect> updateWrapper = new UpdateWrapper();
+        updateWrapper.eq("user_id",collect.getUserId()).eq("message_id",collect.getMessageId());
+        collectService.remove(updateWrapper);
         return 200;
     }
 }

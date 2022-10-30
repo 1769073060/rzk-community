@@ -97,9 +97,9 @@ public class LoginController {
                 userToken.setUserId(userMessageByOtherMessage.get(0).getUserId());
                 userToken.setUserOpenid(userMessageByOtherMessage.get(0).getUserOpenid());
                 token = jwtTokenUtil.generateToken(userToken);
-                UpdateWrapper updateWrapper = new UpdateWrapper();
+                /*UpdateWrapper updateWrapper = new UpdateWrapper();
                 updateWrapper.eq("user_openid",user.getUserOpenid());
-                userService.update(user,updateWrapper);
+                userService.update(user,updateWrapper);*/
 
                 //老用户
                 map.put("userId",userMessageByOtherMessage.get(0).getUserId());
@@ -238,6 +238,7 @@ public class LoginController {
         }
         User user = userService.queryUsersInfo(userId);
         UsersVo usersVo = new UsersVo();
+        log.info("获取我的信息{}"+usersVo.toString());
         BeanUtils.copyProperties(user, usersVo);
         if (StringUtils.isNotBlank(fanId))
             usersVo.setFollow(userService.queryIfFollow(userId, fanId));

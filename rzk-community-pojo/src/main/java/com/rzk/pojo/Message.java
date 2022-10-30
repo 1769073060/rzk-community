@@ -57,15 +57,15 @@ public class Message{
      */
 	private String messageDetail;
     /**
-     * 
+     * 分享
      */
 	private Integer messageShare;
     /**
-     * 
+     * 评论数
      */
 	private Integer messageComment;
     /**
-     * 
+     * 消息查看数量
      */
 	private Integer messageWatch;
     /**

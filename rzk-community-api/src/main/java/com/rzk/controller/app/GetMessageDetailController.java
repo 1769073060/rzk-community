@@ -158,7 +158,7 @@ public class GetMessageDetailController {
             return message;
         }
 
-
+        Integer commentReplyListCounts = 0;
         for (int i = 0; i < comments.size(); i++) {
             CommentReply commentReply = new CommentReply();
             commentReply.setCommentId(comments.get(i).getCommentId());
@@ -168,7 +168,9 @@ public class GetMessageDetailController {
             queryWrapper2.eq("comment_id",comments.get(i).getCommentId());
             List<CommentReply> commentReplyLists = commentReplyService.list(queryWrapper2);
             List<CommentReply> commentReplyList = new ArrayList<>();
+
             if (commentReplyLists.size()>0){
+                commentReplyListCounts+=commentReplyLists.size();
                 //循环获取用户头像
                 for (CommentReply reply : commentReplyLists) {
                     QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
@@ -184,6 +186,9 @@ public class GetMessageDetailController {
 
             comments.get(i).setUser(userService.getOne(queryWrapperUserList));
         }
+        log.info("条数{}"+comments.size());
+        log.info("条数{}"+commentReplyListCounts);
+        message.setMessageComment(comments.size()+commentReplyListCounts);
         message.setComments(comments);
         return message;
     }
