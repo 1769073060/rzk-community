@@ -1,6 +1,8 @@
 package com.rzk.pojo.vo;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 public class CommentsVO {
@@ -15,7 +17,7 @@ public class CommentsVO {
      * 留言者，评论的用户id
      */
     private String fromUserId;
-
+    @JsonFormat(pattern="yyyy年MM月dd日 HH时mm分ss秒",timezone = "UTC")
     private Date createTime;
 
     /**

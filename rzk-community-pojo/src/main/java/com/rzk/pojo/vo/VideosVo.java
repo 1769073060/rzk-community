@@ -1,6 +1,7 @@
 package com.rzk.pojo.vo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,7 @@ public class VideosVo {
     private Long likeCounts;
     @TableField(value = "status")
     private Integer status;
+    @JsonFormat(pattern="yyyy年MM月dd日 HH时mm分ss秒",timezone = "UTC")
     @TableField(value = "create_time")
     private Date createTime;
     @TableField(value = "face_image")

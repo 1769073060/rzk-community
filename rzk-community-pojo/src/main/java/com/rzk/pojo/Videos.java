@@ -1,5 +1,6 @@
 package com.rzk.pojo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +28,7 @@ public class Videos {
     private Long likeCounts;
 
     private Integer status;
-
+    @JsonFormat(pattern="yyyy年MM月dd日 HH时mm分ss秒",timezone = "UTC")
     private Date createTime;
 
     public String getId() {

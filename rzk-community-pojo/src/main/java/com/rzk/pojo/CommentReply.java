@@ -2,7 +2,8 @@ package com.rzk.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
- 
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -55,6 +56,7 @@ public class CommentReply{
     /**
      * 
      */
+	@JsonFormat(pattern="yyyy年MM月dd日 HH时mm分ss秒",timezone = "UTC")
 	private Date replyTime;
 
 	@TableField(exist = false)
