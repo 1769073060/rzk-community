@@ -14,7 +14,6 @@ import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.swagger.annotations.ApiImplicitParam;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.rzk.utils.status.CodeEnum.*;
-import static net.sf.jsqlparser.util.validation.metadata.NamedObject.user;
 
 @Slf4j
 @RestController
@@ -141,9 +139,6 @@ public class LoginController {
         if (image.isEmpty()) {
             return JSONResult.errorMsg("不能上传空文件哦");
         }
-        //图片上传路径
-        //String fileDownloadPath = "C:\\lnsf_mod_dev";
-        //String fileDownloadPath = "/opt/lnsf_mod_dev";
         //图片保存路径
         //String fileUploadPath ="/"+userId+"/image";
         String uploadFile=null;
@@ -157,6 +152,8 @@ public class LoginController {
                 String imgName = userId + "/" + "img" + "/" + date + "/" + filename;
                 minIoClientUpload(image.getInputStream(), imgName);
                 uploadFile =  "/" + bucketName + "/" + imgName;
+
+
                 String videoUrl = endpoint + "/" + bucketName + "/" + imgName;
                 //获取视频的第一帧图片输出流
                 InputStream first = MinioUtils.randomGrabberFFmpegImage(videoUrl);
@@ -181,10 +178,6 @@ public class LoginController {
         UpdateWrapper updateWrapper = new UpdateWrapper();
         updateWrapper.eq("user_id", userId);
         userService.update(user,updateWrapper);
-//        User users = new Users();
-//        users.setId(userId);
-//        users.setFaceImage(uploadFile);
-//        usersService.updateUsersInfo(users);
         return JSONResult.ok(uploadFile);
     }
 

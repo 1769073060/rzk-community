@@ -33,7 +33,9 @@ public class FilterConfig implements WebMvcConfigurer {
                         //这里配置不拦截上方的url
                         //"/download/**");
         registry.addInterceptor(getMyInterceptor()).addPathPatterns("/**")
+                .excludePathPatterns("/swagger-ui/**")
                 .excludePathPatterns("/Login")
+                .excludePathPatterns("/pc/video/upLoadBizhi")
                 .excludePathPatterns("/userVideo/showAllVideos")
                 .excludePathPatterns("/getMessage/getAllMessageDetail/**")
                 .excludePathPatterns("/getMessage/getLostMessage")
