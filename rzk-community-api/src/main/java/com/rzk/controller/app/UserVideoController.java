@@ -93,7 +93,7 @@ public class UserVideoController {
         HashMap map = new HashMap();
 
         String date = DateUtil.formatDate(new Date());
-        String filename = System.currentTimeMillis() + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        String filename = cn.hutool.core.lang.UUID.randomUUID() + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
         if ("0".equals(type)) {
             String imgName = "img" + "/" + date + "/" + filename;
             minIoClientUpload(file.getInputStream(), imgName);
@@ -119,7 +119,7 @@ public class UserVideoController {
         String videoName = videoType + "/" + date + "/" + filename;
 
         String imgPath = this.ffmpegGetScreenshot(file);
-        String imgPathName = System.currentTimeMillis() + imgPath.substring(imgPath.lastIndexOf("."));
+        String imgPathName = cn.hutool.core.lang.UUID.randomUUID() + imgPath.substring(imgPath.lastIndexOf("."));
         BufferedInputStream imgInputStream = FileUtil.getInputStream(imgPath);
 
         String imgName = "img" + "/" + date + "/" + imgPathName;
@@ -169,7 +169,7 @@ public class UserVideoController {
             if (StringUtils.isNotBlank(imageName)) {
 
                 String date = DateUtil.formatDate(new Date());
-                String filename = System.currentTimeMillis() + image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf("."));
+                String filename = cn.hutool.core.lang.UUID.randomUUID() + image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf("."));
                 String imgName = userId + "/" + "img" + "/" + date + "/" + filename;
                 logger.info("imgName"+imgName);
                 minIoClientUpload(image.getInputStream(), imgName);
@@ -233,7 +233,7 @@ public class UserVideoController {
                 String videoName = UUID.randomUUID().toString() + ".mp4";
                 if (StringUtils.isNotBlank(videoName)) {
                     date = DateUtil.formatDate(new Date());
-                    String filename = System.currentTimeMillis() + video.getOriginalFilename().substring(video.getOriginalFilename().lastIndexOf("."));
+                    String filename = cn.hutool.core.lang.UUID.randomUUID() + video.getOriginalFilename().substring(video.getOriginalFilename().lastIndexOf("."));
                     String imgName = userId + "/" + "video" + "/" + date + "/" + originalFileName + "/" + filename;
                     minIoClientUpload(video.getInputStream(), imgName);
                     videoUrl = "/" + bucketName + "/" + imgName;

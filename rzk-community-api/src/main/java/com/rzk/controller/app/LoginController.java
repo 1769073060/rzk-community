@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.rzk.utils.NameUtil.getRandom;
 import static com.rzk.utils.status.CodeEnum.*;
 
 @Slf4j
@@ -107,6 +108,19 @@ public class LoginController {
 
             } else {
                 user.setUserAvatar(AvatarHelper.BASE64_PREFIX +AvatarHelper.createBase64Avatar(Math.abs("springboot.io".hashCode())));
+                NameUtil nameUtil = new NameUtil();
+                String userNickName = "";
+                if (user.getUserGender()==1){
+                    int headNameIndex = getRandom().nextInt(nameUtil.headerNameArray.length);
+
+                    userNickName = nameUtil.headerNameArray[headNameIndex];
+                }else {
+                    int foodNameIndex = getRandom().nextInt(nameUtil.foodNameArray.length);
+                    userNickName = nameUtil.foodNameArray[foodNameIndex];
+                }
+
+
+                user.setUserNickname(userNickName);
                 userService.save(user);
 
                 QueryWrapper<User> queryWrapper = new QueryWrapper<>();
