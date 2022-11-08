@@ -70,7 +70,7 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
 
 
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_openid",user.getUserOpenid());
+        queryWrapper.eq("user_id",user.getUserId());
         return userMapper.selectList(queryWrapper);
     }
 

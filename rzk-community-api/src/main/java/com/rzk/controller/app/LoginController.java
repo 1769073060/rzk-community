@@ -120,6 +120,7 @@ public class LoginController {
                 }
 
 
+                user.setUserAllow(-1);
                 user.setUserNickname(userNickName);
                 userService.save(user);
 
