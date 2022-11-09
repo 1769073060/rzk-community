@@ -237,7 +237,7 @@ public class LoginController {
     public List<User> checkAdmin(Integer id) {
         User user = new User();
         user.setUserId(id);
-        return userService.getUserMessageByOtherMessage(user);
+        return userService.getUserCheckAdminMessageByOtherMessage(user);
     }
 
     @PostMapping("/queryUsers")

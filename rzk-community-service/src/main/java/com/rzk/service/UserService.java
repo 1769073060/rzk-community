@@ -45,6 +45,11 @@ public interface UserService extends IService<User> {
     public List<User> getUserMessageByOtherMessage(User user);
 
     /**
+     * 返回符合条件的用户信息
+     */
+    public List<User> getUserCheckAdminMessageByOtherMessage(User user);
+
+    /**
      * 用户信息查询
      * @param usersId
      * @return

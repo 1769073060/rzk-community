@@ -64,13 +64,25 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
     }
 
     /**
-     * 返回符合条件的用户信息
+     * 返回符合条件的用户信息登录
      */
     public List<User> getUserMessageByOtherMessage(User user) {
 
 
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_openid",user.getUserOpenid());
+        return userMapper.selectList(queryWrapper);
+    }
+
+
+    /**
+     * 返回符合条件的用户信息登录
+     */
+    public List<User> getUserCheckAdminMessageByOtherMessage(User user) {
+
+
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id",user.getUserId());
         return userMapper.selectList(queryWrapper);
     }
 
