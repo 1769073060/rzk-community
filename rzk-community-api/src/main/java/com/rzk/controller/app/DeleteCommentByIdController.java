@@ -1,5 +1,6 @@
 package com.rzk.controller.app;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.rzk.pojo.Comment;
 import com.rzk.pojo.CommentReply;
 import com.rzk.pojo.User;
@@ -26,7 +27,9 @@ public class DeleteCommentByIdController {
     @Transactional
     @PostMapping("/deleteCommentByCommentId/{userId}/{messageId}")
     public Integer deleteCommentByCommentId(@PathVariable Integer userId, @PathVariable Integer messageId) {
-        User user = userService.getById(userId);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id",userId);
+        User user = userService.getOne(queryWrapper);
         if (user == null) {
             return 400;
         }

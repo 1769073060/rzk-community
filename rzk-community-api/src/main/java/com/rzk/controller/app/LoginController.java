@@ -74,6 +74,7 @@ public class LoginController {
     @Transactional
     @PostMapping("/Login")
     public ResponseResult Login(String code, @RequestBody User user) {
+        log.info("获取登录用户信息code{}"+code);
         log.info("获取登录用户信息user{}"+user);
         //      url: 'https://api.weixin.qq.com/sns/jscode2session?appid='+appid+'&secret='+secret+'&js_code='+code+'&grant_type=authorization_code',
         String url = "https://api.weixin.qq.com/sns/jscode2session?appid="+wxMessage.getWxId()+"&secret="+wxMessage.getWxSecret()+"&js_code="+code+"&grant_type=authorization_code";
