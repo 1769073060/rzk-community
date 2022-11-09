@@ -22,4 +22,7 @@
     comment_reply_id, comment_id, comment_user_id, replay_user_id, replay_user_name, 
     receive_user_id, receive_user_name, reply_detail, reply_time
   </sql>
+  <delete id="deleteById">
+    DELETE FROM comment_reply WHERE comment_reply_id=#{comment_reply_id};
+  </delete>
 </mapper>

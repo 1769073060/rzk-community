@@ -1,7 +1,7 @@
 package com.rzk.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.rzk.config.isDelete.IsDelete;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.rzk.pojo.*;
 import com.rzk.service.*;
 import com.rzk.utils.status.CodeEnum;
@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 public class DeleteByUserIdController {
     @Autowired
-    private MessageService messageDetailService;
+    private MessageService messageService;
     @Autowired
     private MessageImagesService messageImagesService;
     @Autowired
@@ -34,8 +34,7 @@ public class DeleteByUserIdController {
     @Transactional
     @PostMapping("/deleteMessageById/{userId}/{messageId}")
     public ResponseResult deleteByUserId(@PathVariable Integer userId, @PathVariable Integer messageId) {
-        IsDelete isDelete = new IsDelete();
-        isDelete.setCode(500);
+
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id",userId);
         User user = userService.getOne(queryWrapper);
@@ -46,35 +45,47 @@ public class DeleteByUserIdController {
         }
         QueryWrapper<Message> messageQueryWrapper = new QueryWrapper<>();
         messageQueryWrapper.eq("message_id",messageId);
-        Message message = messageDetailService.getOne(messageQueryWrapper);
+        Message message = messageService.getOne(messageQueryWrapper);
 
         if (user.getUserIsAdmin() == 2 || message.getUserId() == user.getUserId()) {
 
             /**
              * 删除对应评论
              */
-            messageDetailService.deleteCommentAndReply(messageId);
+            messageService.deleteCommentAndReply(messageId);
             /**
              * 删除我的参与
              */
             Attend attend = new Attend();
             attend.setMessageId(messageId);
-            attendService.removeById(attend);
+            UpdateWrapper<Attend> removeAttendWrapper = new UpdateWrapper<>();
+
+            removeAttendWrapper.eq("message_id",attend.getMessageId());
+            attendService.remove(removeAttendWrapper);
             /**
              * 删除收藏
              */
             Collect collect = new Collect();
             collect.setMessageId(messageId);
-            collectService.removeById(collect);
+            UpdateWrapper<Collect> removeCollectWrapper = new UpdateWrapper<>();
+
+            removeCollectWrapper.eq("message_id",collect.getMessageId());
+            collectService.remove(removeCollectWrapper);
 
             /**
              * 删除消息
              */
             NewMessage newMessage = new NewMessage();
             newMessage.setMessageId(messageId);
-            newMessageService.removeById(newMessage);
+            UpdateWrapper<NewMessage> removeNewMessageWrapper = new UpdateWrapper<>();
 
-            messageDetailService.removeById(messageId);
+            removeNewMessageWrapper.eq("message_id",newMessage.getMessageId());
+            newMessageService.remove(removeNewMessageWrapper);
+
+            UpdateWrapper<Message> removeMessageWrapper = new UpdateWrapper<>();
+
+            removeMessageWrapper.eq("message_id",messageId);
+            messageService.remove(removeMessageWrapper);
             MessageImages messageImages = new MessageImages();
             messageImages.setMessageId(messageId);
 
@@ -82,7 +93,7 @@ public class DeleteByUserIdController {
             imagesQueryWrapper.eq("message_id", messageImages.getMessageId());
 
             List<MessageImages> images = messageImagesService.list(imagesQueryWrapper);
-            messageImagesService.removeById(messageImages);
+            //messageImagesService.removeById(messageImages);
 
             // Endpoint以杭州为例，其它Region请按实际情况填写。
             String endpoint = "你的阿里云实际位置地址";

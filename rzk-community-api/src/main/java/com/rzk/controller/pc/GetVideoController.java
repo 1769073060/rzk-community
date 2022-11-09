@@ -1,18 +1,21 @@
-package com.rzk.controller.app;
+package com.rzk.controller.pc;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import com.rzk.pojo.Comment;
+import com.rzk.pojo.ImageResource;
 import com.rzk.pojo.User;
 import com.rzk.pojo.Videos;
 import com.rzk.pojo.vo.PublisherVideos;
 import com.rzk.pojo.vo.UsersVo;
+import com.rzk.service.ImageResourceService;
 import com.rzk.service.UserService;
 import com.rzk.service.VideosService;
 import com.rzk.utils.*;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.swagger.annotations.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,18 +28,23 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 
+@Slf4j
 @RestController
-@Api(value = "用户上传video有关业务的接口", tags = {"用户上传video业务controller"})
-@RequestMapping("/userVideo")
-public class UserVideoController {
-    private Logger logger = LoggerFactory.getLogger(UserVideoController.class);
+@Api(value = "pc操作video有关业务的接口", tags = {"pc操作video业务controller"})
+@RequestMapping("pc/video")
+public class GetVideoController {
+    private Logger logger = LoggerFactory.getLogger(GetVideoController.class);
 
     @Autowired
     private VideosService videosService;
     @Autowired
     private UserService usersService;
+    @Autowired
+    private ImageResourceService imageResourceService;
 
     @Value("${rzk.url}")
     private String rzkUrl;
@@ -92,7 +100,7 @@ public class UserVideoController {
         HashMap map = new HashMap();
 
         String date = DateUtil.formatDate(new Date());
-        String filename = cn.hutool.core.lang.UUID.randomUUID() + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        String filename = DateUtil.currentSeconds() + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
         if ("0".equals(type)) {
             String imgName = "img" + "/" + date + "/" + filename;
             minIoClientUpload(file.getInputStream(), imgName);
@@ -118,10 +126,10 @@ public class UserVideoController {
         String videoName = videoType + "/" + date + "/" + filename;
 
         String imgPath = this.ffmpegGetScreenshot(file);
-        String imgPathName = cn.hutool.core.lang.UUID.randomUUID() + imgPath.substring(imgPath.lastIndexOf("."));
+        String imgPathName = DateUtil.currentSeconds() + imgPath.substring(imgPath.lastIndexOf("."));
         BufferedInputStream imgInputStream = FileUtil.getInputStream(imgPath);
 
-        String imgName = "img" + "/" + date + "/" + imgPathName;
+        String imgName = "video" + "/" + date + "/" + imgPathName;
 
         minIoClientUpload(imgInputStream, imgName);
         minIoClientUpload(file.getInputStream(), videoName);
@@ -156,9 +164,7 @@ public class UserVideoController {
         if (image.isEmpty()) {
             return JSONResult.errorMsg("不能上传空文件哦");
         }
-        //图片上传路径
-        //String fileDownloadPath = "C:\\lnsf_mod_dev";
-        //String fileDownloadPath = "/opt/lnsf_mod_dev";
+
         //图片保存路径
         //String fileUploadPath ="/"+userId+"/image";
         String uploadFile=null;
@@ -168,7 +174,7 @@ public class UserVideoController {
             if (StringUtils.isNotBlank(imageName)) {
 
                 String date = DateUtil.formatDate(new Date());
-                String filename = cn.hutool.core.lang.UUID.randomUUID() + image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf("."));
+                String filename = DateUtil.currentSeconds() + image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf("."));
                 String imgName = userId + "/" + "img" + "/" + date + "/" + filename;
                 logger.info("imgName"+imgName);
                 minIoClientUpload(image.getInputStream(), imgName);
@@ -187,6 +193,7 @@ public class UserVideoController {
 
                 //图片上传最终路径
                 //图片最终	保存路径
+                com.rzk.utils.FileUtil fileUtil = new com.rzk.utils.FileUtil();
 
             }
         } else {
@@ -197,6 +204,12 @@ public class UserVideoController {
 //        users.setId(userId);
 //        users.setFaceImage(uploadFile);
 //        usersService.updateUsersInfo(users);
+        ImageResource imageResource = new ImageResource();
+        imageResource.setImageUrl(uploadFile);
+        imageResource.setType(1);
+        imageResource.setStatus(1);
+        imageResource.setCreateTime(new Date());
+        imageResource.setUpdateTime(new Date());
         return JSONResult.ok(uploadFile);
     }
 
@@ -232,8 +245,8 @@ public class UserVideoController {
                 String videoName = UUID.randomUUID().toString() + ".mp4";
                 if (StringUtils.isNotBlank(videoName)) {
                     date = DateUtil.formatDate(new Date());
-                    String filename = cn.hutool.core.lang.UUID.randomUUID() + video.getOriginalFilename().substring(video.getOriginalFilename().lastIndexOf("."));
-                    String imgName = userId + "/" + "video" + "/" + date + "/" + originalFileName + "/" + filename;
+                    String filename = DateUtil.currentSeconds() + video.getOriginalFilename().substring(video.getOriginalFilename().lastIndexOf("."));
+                    String imgName =  "video" + "/" + date + "/" + originalFileName + "/" + filename;
                     minIoClientUpload(video.getInputStream(), imgName);
                     videoUrl = "/" + bucketName + "/" + imgName;
                     logger.info("视频地址{}" + videoUrl);
@@ -486,5 +499,235 @@ public class UserVideoController {
         bean.setPublisher(usersVo);
         bean.setUserLikeVideo(userLikeVideo);
         return JSONResult.ok(bean);
+    }
+    
+    
+    //链接url下载图片
+    public static void download(String urlString, String filename,String savePath) throws Exception {
+        // 构造URL
+        URL url = new URL(urlString);
+        // 打开连接
+        URLConnection con = url.openConnection();
+        //设置请求超时为5s
+        con.setConnectTimeout(5*1000);
+        // 输入流
+        InputStream is = con.getInputStream();
+
+        // 1K的数据缓冲
+        byte[] bs = new byte[1024];
+        // 读取到的数据长度
+        int len;
+        // 输出的文件流
+        File sf=new File(savePath);
+        if(!sf.exists()){
+            sf.mkdirs();
+        }
+        log.info(sf.getPath()+filename);
+        OutputStream os = new FileOutputStream(sf.getPath()+"\\"+filename);
+        // 开始读取
+        while ((len = is.read(bs)) != -1) {
+            os.write(bs, 0, len);
+        }
+        // 完毕，关闭所有链接
+        os.close();
+        is.close();
+    }
+
+
+    @ApiImplicitParam(name = "userId", value = "用户的id", required = true, dataType = "String", paramType = "query")
+    @PostMapping("/upLoadBizhi")
+    public void upLoadBizhi(@RequestParam("file") MultipartFile image) throws Exception {
+        log.info("image.getOriginalFilename()"+image.getOriginalFilename());
+        try {
+            // 将D:/test.txt文件读取到输入流中
+            //InputStreamReader input = new InputStreamReader(new FileInputStream(image.getOriginalFilename()),"UTF-8");
+            //InputStreamReader inputTwo = new InputStreamReader(new FileInputStream(image.getOriginalFilename()),"UTF-8");
+            // 创建BufferedReader，以gb2312的编码方式读取文件
+            InputStreamReader inputStreamReader1 = new InputStreamReader(image.getInputStream());
+            InputStreamReader inputStreamReader2 = new InputStreamReader(image.getInputStream());
+            BufferedReader reader = new BufferedReader(inputStreamReader1);
+            BufferedReader readerTwo = new BufferedReader(inputStreamReader2);
+            List<fileUrlTest> fileUrl = new ArrayList<fileUrlTest>();//图片路径List
+            List<fileUrlTwoTest> fileUrlTwo = new ArrayList<fileUrlTwoTest>();//图片名称List
+            String line = null;
+            String lineTwo = null;
+            // 按行读取文本，直到末尾（一般都这么写）
+            while ((line = reader.readLine()) != null) {
+                log.info("按行读取文本---------------->"+line);
+                // 打印当前行字符串
+                fileUrlTest ff = new fileUrlTest();
+                ff.setPathUrl(line);
+                fileUrl.add(ff);
+            }
+            while ((lineTwo = readerTwo.readLine()) != null) {
+                // 打印当前行字符串
+                lineTwo = lineTwo.substring(lineTwo.lastIndexOf("/")+1,lineTwo.length());
+                fileUrlTwoTest fg = new fileUrlTwoTest();
+                fg.setFileName(lineTwo);
+                fileUrlTwo.add(fg);
+            }
+
+
+            for (int i = 0; i < fileUrl.size(); i++) {
+                logger.info("fileUrl{}"+fileUrl.get(i).getPathUrl());
+                MultipartFile fileItem = new com.rzk.utils.FileUtil().createFileItem(fileUrl.get(i).getPathUrl(), fileUrlTwo.get(i).getFileName());
+                logger.info("fileItem{}"+fileItem);
+                String filename = System.currentTimeMillis() + fileItem.getOriginalFilename().substring(fileItem.getOriginalFilename().lastIndexOf("."));
+
+                //截取文件夹，每个文件下都有多个图片
+                int index = fileUrl.get(i).getPathUrl().lastIndexOf("/")-7;
+                String subFileUrl = fileUrl.get(i).getPathUrl().substring(index);
+                log.info(subFileUrl);
+
+                String subFileName = subFileUrl.substring(0,subFileUrl.indexOf("/"));
+
+
+                String imgName = "img" + "/" + subFileName + "/" + filename;
+                minIoClientUpload(fileItem.getInputStream(), imgName);
+                String upload = "/" + bucketName + "/" + imgName;
+                logger.info("上传地址为====>"+upload);
+                ImageResource imageResource = new ImageResource();
+                imageResource.setImageUrl(upload);
+                imageResource.setType(1);
+                imageResource.setStatus(1);
+                imageResource.setGroupName(subFileName);
+                imageResource.setCreateTime(new Date());
+                imageResource.setUpdateTime(new Date());
+                boolean save = imageResourceService.save(imageResource);
+                if (save==true){
+                    logger.info("保存图片地址------->"+save);
+                }
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @ApiImplicitParam(name = "userId", value = "用户的id", required = true, dataType = "String", paramType = "query")
+    @PostMapping("/upLoadShiping")
+    public void upLoadShiping(@RequestParam("file") MultipartFile image) throws Exception {
+        log.info("image.getOriginalFilename()"+image.getOriginalFilename());
+        try {
+            // 将D:/test.txt文件读取到输入流中
+            //InputStreamReader input = new InputStreamReader(new FileInputStream(image.getOriginalFilename()),"UTF-8");
+            //InputStreamReader inputTwo = new InputStreamReader(new FileInputStream(image.getOriginalFilename()),"UTF-8");
+            // 创建BufferedReader，以gb2312的编码方式读取文件
+            InputStreamReader inputStreamReader1 = new InputStreamReader(image.getInputStream());
+            InputStreamReader inputStreamReader2 = new InputStreamReader(image.getInputStream());
+            BufferedReader reader = new BufferedReader(inputStreamReader1);
+            BufferedReader readerTwo = new BufferedReader(inputStreamReader2);
+            List<fileUrlTest> fileUrl = new ArrayList<fileUrlTest>();//图片路径List
+            List<fileUrlTwoTest> fileUrlTwo = new ArrayList<fileUrlTwoTest>();//图片名称List
+            String line = null;
+            String lineTwo = null;
+            // 按行读取文本，直到末尾（一般都这么写）
+            while ((line = reader.readLine()) != null) {
+                log.info("按行读取文本---------------->"+line);
+                // 打印当前行字符串
+                fileUrlTest ff = new fileUrlTest();
+                ff.setPathUrl(line);
+                fileUrl.add(ff);
+            }
+            while ((lineTwo = readerTwo.readLine()) != null) {
+                // 打印当前行字符串
+                lineTwo = lineTwo.substring(lineTwo.lastIndexOf("/")+1,lineTwo.length());
+                fileUrlTwoTest fg = new fileUrlTwoTest();
+                fg.setFileName(lineTwo);
+                fileUrlTwo.add(fg);
+            }
+            String videoUrl = null;
+            String date = null;
+            for (int i = 0; i < fileUrl.size(); i++) {
+                logger.info("fileUrl{}"+fileUrl.get(i).getPathUrl());
+                MultipartFile fileItem = new com.rzk.utils.FileUtil().createFileItem(fileUrl.get(i).getPathUrl(), fileUrlTwo.get(i).getFileName());
+                logger.info("fileItem{}"+fileItem);
+                String filename = System.currentTimeMillis() + fileItem.getOriginalFilename().substring(fileItem.getOriginalFilename().lastIndexOf("."));
+
+                //截取文件夹，每个文件下都有多个图片
+                int index = fileUrl.get(i).getPathUrl().lastIndexOf("/");
+                String subFileUrl = fileUrl.get(i).getPathUrl().substring(index);
+                log.info(subFileUrl);
+
+                String subFileName = subFileUrl.substring(0,subFileUrl.indexOf("/"));
+
+                date = DateUtil.formatDate(new Date());
+                String imgName = "video" + "/" + date + "/" + filename;
+                minIoClientUpload(fileItem.getInputStream(), imgName);
+                String upload = "/" + bucketName + "/" + imgName;
+                logger.info("上传地址为====>"+upload);
+
+
+                //获取视频的第一帧图片输出流
+                InputStream first = MinioUtils.randomGrabberFFmpegImage(upload);
+                //获取文件名
+                String fileJpgName = upload.substring(upload.lastIndexOf("/"), upload.lastIndexOf(".")).concat(".jpg");
+                //根据用户名  日期 文件名 生成截图地址
+                String fileName =  "video" + "/" + System.currentTimeMillis() + "/" + subFileName + fileJpgName;
+                //将流转化为multipartFile
+                MultipartFile multipartFile = new MockMultipartFile("file", fileName, "image/jpg", first);
+                //上传截图
+                String pictureName = minioUtils.upload(multipartFile);
+                String pictureUrl = "/" + bucketName + "/" + pictureName;
+                //视频截图工具
+
+//                //保存视频信息到mysql
+//                Videos videos = new Videos();
+//                videos.setUserId("1");
+//                videos.setVideoSeconds((float) videoSeconds);
+//                videos.setVideoHeight(videoHeight);
+//                videos.setVideoWidth(videoWidth);
+//                videos.setVideoDesc(desc);
+//                videos.setVideoPath(videoUrl);
+//                videos.setCoverPath(pictureUrl);
+//                videos.setStatus(UserVideoStatusEnum.BAN.value);
+//                videos.setCreateTime(new Date());
+//                videosid = videosService.insertVideos(videos);
+//                if (save==true){
+//                    logger.info("保存图片地址------->"+save);
+//                }
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        String url = "http://elf-deco.img.maibaapp.com/content/ugc/wallpaper/5119863/11bec812c78f028e28b840dea53b184d.jpg";
+        int i = url.lastIndexOf("/")-7;
+        String substring = url.substring(i);
+        log.info(substring);
+
+        String substring1 = substring.substring(0,substring.indexOf("/"));
+        log.info(substring1);
+    }
+
+}
+
+class fileUrlTest{
+    String pathUrl;
+
+    public String getPathUrl() {
+        return pathUrl;
+    }
+
+    public void setPathUrl(String pathUrl) {
+        this.pathUrl = pathUrl;
+    }
+}
+
+class fileUrlTwoTest{
+    String fileName;
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

@@ -7,7 +7,6 @@ import com.github.pagehelper.PageInfo;
 import com.rzk.config.VerifyUser;
 import com.rzk.pojo.Collect;
 import com.rzk.pojo.Message;
-import com.rzk.pojo.User;
 import com.rzk.service.CollectService;
 import com.rzk.service.MessageImagesService;
 import com.rzk.service.MessageService;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
