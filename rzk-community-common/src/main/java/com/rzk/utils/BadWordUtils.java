@@ -303,7 +303,7 @@ public class BadWordUtils {
             }
             Iterator<String> iterator = set.iterator();
             while (iterator.hasNext()){
-                System.out.println(iterator.next());
+                log.info(iterator.next());
             }
         }
         else {
@@ -367,11 +367,11 @@ public class BadWordUtils {
             }
             Iterator<String> iterator = set.iterator();
             while (iterator.hasNext()){
-                System.out.println(iterator.next());
+                log.info(iterator.next());
             }
         }
         else {
-            System.out.println("异常{}请检查是否有该文件");
+            log.info("异常{}请检查是否有该文件");
             throw new Exception();
         }
         read.close();
@@ -389,34 +389,32 @@ public class BadWordUtils {
         //初始化敏感词库
         BadWordUtils.init(sensitiveWordSet);
 
-        System.out.println("敏感词的数量：" + BadWordUtils.sensitiveWordMap.size());
+        log.info("敏感词的数量：" + BadWordUtils.sensitiveWordMap.size());
         String string = "太多的你妈滚伤感情怀也许只局限于饲养基地 荧幕中的情节胡锦涛。"
                 + "然后我们的扮演的角色就是跟随着主人公的喜红客联盟 怒哀乐而过于牵强的把自己的情感也附加于银幕情节中，然后感动就流泪，"
                 + "难过就躺在某一个人的怀里尽情的阐述心扉或者手机卡复制器一个贱人一杯红酒一部电影在夜 深人静的晚上，关上电话静静的发呆着。";
-        System.out.println("待检测语句字数：" + string.length());
+        log.info("待检测语句字数：" + string.length());
 
         //是否含有关键字
         boolean result = BadWordUtils.contains(string);
-        System.out.println(result);
         result = BadWordUtils.contains(string, BadWordUtils.MinMatchTYpe);
-        System.out.println(result);
 
         //获取语句中的敏感词
         Set<String> set = BadWordUtils.getSensitiveWord(string);
-        System.out.println("语句中包含敏感词的个数为：" + set.size() + "。包含：" + set);
+        log.info("语句中包含敏感词的个数为：" + set.size() + "。包含：" + set);
         set = BadWordUtils.getSensitiveWord(string, BadWordUtils.MinMatchTYpe);
-        System.out.println("语句中包含敏感词的个数为：" + set.size() + "。包含：" + set);
+        log.info("语句中包含敏感词的个数为：" + set.size() + "。包含：" + set);
 
         //替换语句中的敏感词
         String filterStr = BadWordUtils.replaceSensitiveWord(string, '*');
-        System.out.println(filterStr);
+        log.info(filterStr);
         filterStr = BadWordUtils.replaceSensitiveWord(string, '*', BadWordUtils.MinMatchTYpe);
-        System.out.println(filterStr);
+        log.info(filterStr);
 
         String filterStr2 = BadWordUtils.replaceSensitiveWord(string, "[*敏感词*]");
-        System.out.println(filterStr2);
+        log.info(filterStr2);
         filterStr2 = BadWordUtils.replaceSensitiveWord(string, "[*敏感词*]", BadWordUtils.MinMatchTYpe);
-        System.out.println(filterStr2);
+        log.info(filterStr2);
     }
 
 }

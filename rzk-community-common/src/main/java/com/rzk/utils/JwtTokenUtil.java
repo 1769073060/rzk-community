@@ -2,6 +2,7 @@ package com.rzk.utils;
 
 import com.rzk.pojo.User;
 import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import java.util.Map;
  * @CreateTime : 3/5/2021 下午4:00
  * @Version : 1.0.0
  */
+@Slf4j
 @Component
 public class JwtTokenUtil {
     //jwt 荷载用户名的key
@@ -33,22 +35,18 @@ public class JwtTokenUtil {
     public static void main(String[] args) {
         String s = generateToken("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvbUN4UjQzbmpQWXBOZWFYcUw3cHRNc29fcW40IiwiY3JlYXRlZCI6MTY2NjU5NzA1OTg5MSwiZXhwIjoxNjY3MjAxODU5fQ.IFX1_QkLT6D8jKODZCmM_eR7W4jMhO2OkO18yFq51mh9UjPN8WwwHg2DAc5cWHNSPI9JtFYOok7Sjzd83yHdpA\n");
 
-        System.out.println(s);
+        log.info(s);
         Claims claims = getClaimsFromTokens("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvbUN4UjQzbmpQWXBOZWFYcUw3cHRNc29fcW40IiwiY3JlYXRlZCI6MTY2NjUzMjA0NTk5MSwiZXhwIjoxNjY3MTM2ODQ2fQ.vsJql6cG1rzG4UMiCcLHnILxMqbWeTrt2gnS8alO-taTjDifyLL0IvivyOmTUhhAqWVNRXNzbU5QoDiE1Qq_yQ");
-        System.out.println(claims.getExpiration());
-        System.out.println(claims);
-        System.out.println(claims.get("sub"));
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
         //Claims claims = Jwts.parser().setSigningKey("itcast").parseClaimsJws(token).getBody();
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-        System.out.println("当前时间:"+format.format(new Date()));
-        System.out.println("过期时间:"+format.format(claims.getExpiration()));
-        System.out.println("判断是否失效");
+        log.info("当前时间:"+format.format(new Date()));
+        log.info("过期时间:"+format.format(claims.getExpiration()));
+        log.info("判断是否失效");
         boolean tokenExpireds = isTokenExpireds("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvbUN4UjQzbmpQWXBOZWFYcUw3cHRNc29fcW40IiwiY3JlYXRlZCI6MTY2NjUzMjA0NTk5MSwiZXhwIjoxNjY3MTM2ODQ2fQ.vsJql6cG1rzG4UMiCcLHnILxMqbWeTrt2gnS8alO-taTjDifyLL0IvivyOmTUhhAqWVNRXNzbU5QoDiE1Qq_yQ");
-        System.out.println(tokenExpireds);
     }
     public static Claims getClaimsFromTokens(String token) {
         Claims claims = null;

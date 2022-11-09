@@ -157,7 +157,7 @@ public class VideosServiceImpl implements VideosService {
         for (CommentsVO c : list) {
             String timeAgo = TimeAgoUtils.format(c.getCreateTime());
             //SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            //System.out.println(simpleDateFormat.format(date));
+            //log.info(simpleDateFormat.format(date));
             c.setTimeAgoStr(timeAgo);
         }
 

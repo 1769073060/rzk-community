@@ -16,6 +16,7 @@ import com.rzk.utils.JwtTokenUtil;
 import com.rzk.utils.status.MsgConsts;
 import com.rzk.utils.status.ResponseResult;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -25,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+@Slf4j
 @Component
 public class MyInterceptor implements HandlerInterceptor {
 
@@ -39,9 +41,26 @@ public class MyInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        System.out.println("拦截器");
+        String ipAddress = request.getHeader("x-forwarded-for");
+        if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+        }
+        //对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
+        if (ipAddress != null && ipAddress.length() > 15) {
+            if (ipAddress.indexOf(",") > 0) {
+                ipAddress = ipAddress.substring(0, ipAddress.indexOf(","));
+            }
+        }
+
+        log.info("拦截器{}ip=====>"+ipAddress);
         String token = request.getHeader("authorization");// 从 http 请求头中取出 token
-        System.out.println("token{}"+token);
+        log.info("token{}"+token);
         // 执行认证
         if (token == null) {
             throw new RuntimeException("无token,请重新登录");
@@ -51,7 +70,7 @@ public class MyInterceptor implements HandlerInterceptor {
         try {
             Claims claimsFromToken = jwtTokenUtil.getClaimsFromToken(token);
             openId = claimsFromToken.get("sub").toString();
-            System.out.println(openId);
+            log.info(openId);
         } catch (JWTDecodeException j) {
             throw new RuntimeException("401");
         }

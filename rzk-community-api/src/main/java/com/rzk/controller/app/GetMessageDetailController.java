@@ -38,7 +38,7 @@ public class GetMessageDetailController {
 
         PageInfo<Message> pageInfo = new PageInfo<Message>(messageDetailService.getAllMessage());
 
-        System.out.println("pageInfo"+pageInfo);
+        log.info("pageInfo"+pageInfo);
         if (pageInfo.getPageNum() < pageNumber) {
             List list1 = new LinkedList();
             list1.add(200);
@@ -46,7 +46,7 @@ public class GetMessageDetailController {
         }
         List<Message> allMessage = pageInfo.getList();
         for (int i = 0; i < allMessage.size(); i++) {
-            System.out.println("allMessage============="+allMessage);
+            log.info("allMessage============="+allMessage);
             QueryWrapper<User> queryWrapperUser = new QueryWrapper<>();
             queryWrapperUser.eq("user_id",allMessage.get(i).getUserId());
 
@@ -78,10 +78,10 @@ public class GetMessageDetailController {
         for (int i = 0; i < allMessage.size(); i++) {
             QueryWrapper<User> queryWrapperUser = new QueryWrapper<>();
             queryWrapperUser.eq("user_id",allMessage.get(i).getUserId());
-            System.out.println("allMessage.get(i).getUserId()=================="+allMessage.get(i).getUserId());
+            log.info("allMessage.get(i).getUserId()=================="+allMessage.get(i).getUserId());
 
             User byId = userService.getOne(queryWrapperUser);
-            System.out.println("byId=================="+byId);
+            log.info("byId=================="+byId);
 
             allMessage.get(i).setUser(byId);
             MessageImages messageImages = new MessageImages();

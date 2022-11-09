@@ -74,7 +74,6 @@ public class TimeAgoUtils {
 	public static void main(String[] args) throws Exception {
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:m:s");
 		Date date = format.parse("2018-05-01 18:35:35");
-		System.out.println(format(date));
 	}
 
 }

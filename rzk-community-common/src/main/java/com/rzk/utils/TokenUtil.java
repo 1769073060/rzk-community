@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.rzk.pojo.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -20,6 +21,7 @@ import java.util.Date;
  * @CreateTime : 2022年 10月 22日 下午12:01
  * @Version : 1.0.0
  */
+@Slf4j
 public class TokenUtil {
     public static String getToken() {
         Date start = new Date();
@@ -38,15 +40,15 @@ public class TokenUtil {
 
         Claims claims = Jwts.parser().setSigningKey("itcast").parseClaimsJws(token).getBody();
 
-        System.out.println("签发时间:"+sdf.format(claims.getIssuedAt()));
-        System.out.println("过期时间:"+sdf.format(claims.getExpiration()));
-        System.out.println("当前时间:"+sdf.format(new Date()) );
+        log.info("签发时间:"+sdf.format(claims.getIssuedAt()));
+        log.info("过期时间:"+sdf.format(claims.getExpiration()));
+        log.info("当前时间:"+sdf.format(new Date()) );
 
-        System.out.println("生成{}"+token);
+        log.info("生成{}"+token);
         String userId = JWT.decode(token).getAudience().get(0);
-        System.out.println("解析token{}"+userId);
+        log.info("解析token{}"+userId);
         String userId1 = JWT.decode(token).getAudience().get(1);
-        System.out.println("解析token{}"+userId1);
+        log.info("解析token{}"+userId1);
     }
 
 

@@ -27,7 +27,7 @@ public class GetVideoPicture {
     public static File getFile(String url) throws Exception {
         //对本地文件命名
         String fileName = url.substring(url.lastIndexOf("/") + 1);
-        System.out.println("fileName"+fileName);
+        log.info("fileName"+fileName);
         File file = null;
 
         URL urlfile;
@@ -35,7 +35,7 @@ public class GetVideoPicture {
         OutputStream os = null;
         try {
             file = File.createTempFile("/fastdfs/", fileName.substring(fileName.lastIndexOf("/")+1));
-            System.out.println("url"+url);
+            log.info("url"+url);
 
             //下载
             urlfile = new URL(url);
@@ -121,11 +121,11 @@ public class GetVideoPicture {
     public static void main(String[] args) throws Exception {
 //        StringBuffer sb = new StringBuffer();
 //        sb.append("");
-//        System.out.println(sb.toString());
+//        log.info(sb.toString());
         //getFile("http://120.79.7.36:88/rzk/M00/00/00/eE8HJGKc-RaAQXMoAAEbdRvRy0A565.mp4");
         try {
             String videoPath = "http://120.79.7.36:88/rzk/M00/00/00/eE8HJGKc-RaAQXMoAAEbdRvRy0A565.mp4";
-            System.out.println(videoPath.substring(videoPath.lastIndexOf("/")));
+            log.info(videoPath.substring(videoPath.lastIndexOf("/")));
 
             String imgPath = "http://120.79.7.36:88/rzk/M00/00/00/eE8HJGKc-RaAQXMoAAEbdRvRy0A565.jpg";
             getVideoPicture(videoPath,imgPath);

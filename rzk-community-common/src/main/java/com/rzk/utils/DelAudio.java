@@ -86,8 +86,6 @@ public class DelAudio {
 
 			//可能导致进程阻塞，甚至死锁
 			int ret = process.waitFor();
-			System.out.println("return value:"+ret);
-			System.out.println(process.exitValue());
 		}catch (Exception ex){
 			ex.printStackTrace();
 			try{
@@ -98,7 +96,7 @@ public class DelAudio {
 			catch(Exception ee){}
 		}
 		/*for (String c : command) {
-			System.out.println(c + " ");
+			log.info(c + " ");
 		}
 		InputStream errorStream = process.getErrorStream();
 		InputStreamReader inputStreamReader = new InputStreamReader(errorStream);

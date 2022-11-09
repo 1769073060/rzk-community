@@ -3,6 +3,7 @@ package com.rzk.utils;
 import com.rzk.utils.status.BaseResponse;
 import com.rzk.utils.status.CodeEnum;
 import com.rzk.utils.status.ResponseData;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -55,7 +56,7 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResponseData exceptionHandler(HttpServletRequest req, Exception e) {
         logger.error("未知异常！原因是:", e);
-        System.out.println("e.getMessage()"+e.getMessage());
+        log.info("e.getMessage()"+e.getMessage());
         if ("无token,请重新登录".equals(e.getMessage())){
             logger.info("进入"+e.getMessage());
             return ResponseData.error(CodeEnum.NOT_LOGIN.getCode(), CodeEnum.NOT_LOGIN.getMsg());

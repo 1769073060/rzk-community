@@ -1,5 +1,7 @@
 package com.rzk.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +12,7 @@ import java.util.List;
  * 
  * @Description: 获取视频的信息
  */
+@Slf4j
 public class FetchVideoCover {
 	// 视频路径
 	private String ffmpegVideos;
@@ -85,8 +88,7 @@ public class FetchVideoCover {
 
 			//可能导致进程阻塞，甚至死锁
 			int ret = process.waitFor();
-			System.out.println("return value:"+ret);
-			System.out.println(process.exitValue());
+			log.info("return value:"+ret);
 		}catch (Exception ex){
 			ex.printStackTrace();
 			try{

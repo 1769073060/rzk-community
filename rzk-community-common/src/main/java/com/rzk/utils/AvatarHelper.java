@@ -55,8 +55,7 @@ public class AvatarHelper {
                 int i1 = new Random().nextInt(16)+10;
                 int i2 = new Random().nextInt(16);
                 int i3 = new Random().nextInt(15)+15;
-                System.out.println(i1);
-                if (idchars[--i] < 53) {//15
+                 if (idchars[--i] < 53) {//15
                     _2d.fillRect((padding + x * i1), (padding + y * width), width, width);
                     //_2d.draw3DRect((padding + x * width * 2), (padding + y * width * 2), width * 2, width * 2,true);
                     if (x < Math.floor(grid / 2)) {

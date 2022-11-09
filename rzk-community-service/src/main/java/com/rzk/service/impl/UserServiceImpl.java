@@ -93,9 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
         UsersLikeVideosExample usersLikeVideosExample = new UsersLikeVideosExample();
         usersLikeVideosExample.createCriteria().andUserIdEqualTo(userId).andVideoIdEqualTo(videoId);
         List<UsersLikeVideos> usersLikeVideosList=usersLikeVideosDao.selectByExample(usersLikeVideosExample);
-        System.out.println(usersLikeVideosList);
         if (usersLikeVideosList!=null && usersLikeVideosList.size()>0){
-            System.out.println(111111);
             return true;
         }
         return false;

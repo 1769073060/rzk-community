@@ -2,6 +2,7 @@ package com.rzk.utils;
 
 
 import cn.hutool.core.io.FileUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -23,6 +24,7 @@ import java.util.Map;
  * @CreateTime : 7/6/2022 上午1:51
  * @Version : v1.0
  */
+@Slf4j
 public class ScreenShotUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScreenShotUtils.class);
 
@@ -30,8 +32,7 @@ public class ScreenShotUtils {
 
     public static void main(String[] args) {
         Map<String, Object> screenshot = getScreenshot("http://com.rzk.mapper.dao.:9999/rzk/vod_1654629487979.mp4");
-        System.out.println(screenshot);
-        System.out.println("1341654");
+        log.info("1341654");
     }
 
     /**
@@ -210,22 +211,22 @@ public class ScreenShotUtils {
 
 //    public static Map<String, Object> getScreenshot(String filePath) {
 //        try {
-//            System.out.println("截取视频截图开始");
+//            log.info("截取视频截图开始");
 //            LOGGER.debug("截取视频截图开始：" + System.currentTimeMillis());
 //            Map<String, Object> result = new HashMap<String, Object>();
 //            FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(filePath);
 //
 //            // 第一帧图片存储位置
 //            String targerFilePath = filePath.substring(0, filePath.lastIndexOf("/"));
-//            System.out.println("----------------------targerFilePath="+targerFilePath);
+//            log.info("----------------------targerFilePath="+targerFilePath);
 //            // 视频文件名
 //            String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-//            System.out.println("----------------------fileName="+fileName);
+//            log.info("----------------------fileName="+fileName);
 //            // 图片名称
 //            String targetFileName = fileName.substring(0, fileName.lastIndexOf("."));
-//            System.out.println("视频路径是：" + targerFilePath);
-//            System.out.println("视频文件名：" + fileName);
-//            System.out.println("图片名称是：" + targetFileName);
+//            log.info("视频路径是：" + targerFilePath);
+//            log.info("视频文件名：" + fileName);
+//            log.info("图片名称是：" + targetFileName);
 //            LOGGER.debug("视频路径是：" + targerFilePath);
 //            LOGGER.debug("视频文件名：" + fileName);
 //            LOGGER.debug("图片名称是：" + targetFileName);
@@ -277,7 +278,7 @@ public class ScreenShotUtils {
 //        LOGGER.debug("视频的格式：" + grabber.getFormat());
 //        LOGGER.debug("此视频时长（s/秒）：" + duration);
 //            grabber.stop();
-//            System.out.println("截取视频截图结束：" + System.currentTimeMillis());
+//            log.info("截取视频截图结束：" + System.currentTimeMillis());
 //            LOGGER.debug("截取视频截图结束：" + System.currentTimeMillis());
 //            return result;
 //        } catch (Exception e) {

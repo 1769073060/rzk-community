@@ -81,7 +81,7 @@ public class LoginController {
         Map<String,Object> map = new HashMap<>();
         String token = null;
         String wxResult = HttpClientUtil.doGet(url);
-        System.out.println("登陆后显示："+wxResult);
+        log.info("登陆后显示："+wxResult);
         WXSessionModel wxSessionModel = JsonUtils.jsonToPojo(wxResult, WXSessionModel.class);
 
         String openid = wxSessionModel.getOpenid();
@@ -90,7 +90,7 @@ public class LoginController {
 
 
         List<User> userMessageByOtherMessage = userService.getUserMessageByOtherMessage(user);
-        System.out.println("登录userMessageByOtherMessage"+userMessageByOtherMessage.size());
+        log.info("登录userMessageByOtherMessage"+userMessageByOtherMessage.size());
         try {
             if (userMessageByOtherMessage.size() == 1) {
                 User userToken = new User();
@@ -104,7 +104,7 @@ public class LoginController {
                 //老用户
                 map.put("userId",userMessageByOtherMessage.get(0).getUserId());
                 map.put("token",token);
-                System.out.println("Token{}"+token);
+                log.info("Token{}"+token);
                 return  new ResponseResult(MsgConsts.SUCCESS_CODE, "老用户",map);
 
             } else {
@@ -131,7 +131,7 @@ public class LoginController {
                 token = jwtTokenUtil.generateToken(userServiceOne);
                 map.put("userId",userServiceOne.getUserId());
                 map.put("token",token);
-                System.out.println("Token{}"+token);
+                log.info("Token{}"+token);
                 return ResponseResult.success(MsgConsts.NEW_USER,"新用户",map);//新用户
 
             }

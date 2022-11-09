@@ -1,5 +1,7 @@
 package com.rzk.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +12,7 @@ import java.util.List;
 /**
  * 去水印
  */
+@Slf4j
 public class DelWatermarkLeft {
 
 	private String ffmpegVideos;
@@ -33,14 +36,13 @@ public class DelWatermarkLeft {
 		command.add("\"delogo=x=10:y=10:w=250:h=100:show=0\"");
 		command.add("-y");
 		command.add(videoOutPutPth);
-		System.out.println("leftConvertor:");
+		log.info("leftConvertor:");
 
 
 
 		for (String c : command) {
 			System.out.print(c + " ");
 		}
-		System.out.println();
 		ProcessBuilder builder = new ProcessBuilder(command);
 		Process process = builder.start();
 		// 启动单独的线程来清空process.getInputStream()的缓冲区
@@ -93,8 +95,7 @@ public class DelWatermarkLeft {
 			}.start();
 			//可能导致进程阻塞，甚至死锁
 			int ret = process.waitFor();
-			System.out.println("return value:"+ret);
-			System.out.println(process.exitValue());
+			log.info("return value:"+ret);
 		}catch (Exception ex){
 			ex.printStackTrace();
 			try{
