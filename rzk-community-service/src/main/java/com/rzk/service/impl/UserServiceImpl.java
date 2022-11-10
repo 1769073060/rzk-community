@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.rzk.mapper.dao.UserDao;
 import com.rzk.mapper.dao.UserFansMapper;
+import com.rzk.mapper.dao.UserReportDao;
 import com.rzk.mapper.dao.UsersLikeVideosDao;
 import com.rzk.pojo.*;
 import com.rzk.service.UserService;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +35,8 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
     private UsersLikeVideosDao usersLikeVideosDao;
     @Resource
     private UserFansMapper userFansMapper;
+    @Resource
+    private UserReportDao userReportDao;
     /**
      * 新用户插入
      *
@@ -90,8 +94,6 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
     @Transactional(propagation = Propagation.SUPPORTS )
     @Override
     public User queryUsersInfo(String usersId) {
-        UsersExample usersExample = new UsersExample();
-        UsersExample.Criteria criteria = usersExample.createCriteria();
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id",usersId));
         return user;
     }

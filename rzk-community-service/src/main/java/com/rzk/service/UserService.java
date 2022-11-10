@@ -3,6 +3,7 @@ package com.rzk.service;
 
 import com.rzk.pojo.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.rzk.pojo.UserReport;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -60,6 +61,7 @@ public interface UserService extends IService<User> {
      *查询用户是否喜欢视频
      */
     public boolean isUserLikeVideo(String userId,String videoId);
+
 
     /**
      * 是否是粉丝

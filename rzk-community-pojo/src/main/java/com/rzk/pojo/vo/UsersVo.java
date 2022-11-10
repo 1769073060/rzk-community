@@ -23,6 +23,7 @@ public class UsersVo {
     private String username;
     private String userNickname;
     private Integer userAllow;
+    private Integer userIsAdmin;
     private String userAvatar;
     @JsonIgnore
     @ApiModelProperty(value = "密码" ,name = "password",example = "123456",required = true)

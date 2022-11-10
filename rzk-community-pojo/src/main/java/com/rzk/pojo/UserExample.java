@@ -6,14 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class UsersExample {
+public class UserExample {
     protected String orderByClause;
 
     protected boolean distinct;
 
     protected List<Criteria> oredCriteria;
 
-    public UsersExample() {
+    public UserExample() {
         oredCriteria = new ArrayList<Criteria>();
     }
 
