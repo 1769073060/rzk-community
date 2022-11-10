@@ -173,6 +173,7 @@ public class UserVideoController {
                 logger.info("imgName"+imgName);
                 minIoClientUpload(image.getInputStream(), imgName);
                 uploadFile =  "/" + bucketName + "/" + imgName;
+                /**
                 String videoUrl = endpoint + "/" + bucketName + "/" + imgName;
                 //获取视频的第一帧图片输出流
                 InputStream first = MinioUtils.randomGrabberFFmpegImage(videoUrl);
@@ -182,8 +183,9 @@ public class UserVideoController {
                 MultipartFile multipartFile = new MockMultipartFile("file", fileName, "image/jpg", first);
 
                 String pictureName = minioUtils.upload(multipartFile);
+                logger.info("pictureName{}=============>"+pictureName);
                 String pictureUrl = endpoint + "/" + bucketName + "/" + pictureName;
-
+**/
 
                 //图片上传最终路径
                 //图片最终	保存路径
