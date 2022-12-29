@@ -69,6 +69,7 @@ public class AddMessageDetailController {
         //检查是否需要替换敏感词
         String filterStr = badWordUtils.replaceSensitive(message.getMessageDetail());
         message.setMessageDetail(filterStr);
+        message.setMessageImage(resultImage.get(0));
         Integer messageId = messageDetailService.addMessage(message);
 
         if (messageId==1){

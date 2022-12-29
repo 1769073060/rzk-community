@@ -63,7 +63,7 @@ public class GetMessageDetailController {
     }
 
     @PostMapping("/getMessage/getAllMessageDetail/{categoryId}/{pageNumber}")
-    public List<Message> getMessageByCategoryId(@PathVariable Integer categoryId, @PathVariable Integer pageNumber) {
+    public List<Message> getMessageByCategoryId(@PathVariable String categoryId, @PathVariable Integer pageNumber) {
         PageHelper.startPage(pageNumber, 8);
 
         PageInfo<Message> pageInfo = new PageInfo<Message>(messageDetailService.getMessageByCategoryId(categoryId));

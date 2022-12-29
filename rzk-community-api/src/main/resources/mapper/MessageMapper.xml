@@ -8,7 +8,7 @@
         <id column="message_id" jdbcType="INTEGER" property="messageId"/>
         <result column="user_id_anonymity" jdbcType="INTEGER" property="userIdAnonymity"/>
         <result column="user_id" jdbcType="INTEGER" property="userId"/>
-        <result column="category_id" jdbcType="INTEGER" property="categoryId"/>
+        <result column="category_id" jdbcType="VARCHAR" property="categoryId"/>
         <result column="user_phone" jdbcType="VARCHAR" property="userPhone"/>
         <result column="user_major" jdbcType="VARCHAR" property="userMajor"/>
         <result column="user_level" jdbcType="VARCHAR" property="userLevel"/>
@@ -17,50 +17,52 @@
         <result column="message_comment" jdbcType="INTEGER" property="messageComment"/>
         <result column="message_watch" jdbcType="INTEGER" property="messageWatch"/>
         <result column="message_creat_time" jdbcType="TIMESTAMP" property="messageCreatTime"/>
+        <result column="message_image" jdbcType="VARCHAR" property="messageImage"/>
+        <result column="message_title" jdbcType="VARCHAR" property="messageTitle"/>
     </resultMap>
 
 
     <sql id="Base_Column_List">
         message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time
+        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title
     </sql>
     <select id="getLostMessage" resultMap="BaseResultMap">
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE category_id=1 ORDER BY message.message_creat_time desc limit 1
+        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE category_id=02 ORDER BY message.message_creat_time desc limit 1
     </select>
     <insert id="insertMessageDetail">
         <selectKey resultType="Integer" keyProperty="messageId">
             SELECT LAST_INSERT_ID()
         </selectKey>
         INSERT INTO message (message.user_id_anonymity,message.user_id,message.category_id,
-        message.user_phone, message.user_major, message.user_level,message.message_detail)
+        message.user_phone, message.user_major, message.user_level,message.message_detail,message.message_image,message.message_title)
         VALUES
-        (#{userIdAnonymity},#{userId},#{categoryId},#{userPhone},#{userMajor},#{userLevel},#{messageDetail})
+        (#{userIdAnonymity},#{userId},#{categoryId},#{userPhone},#{userMajor},#{userLevel},#{messageDetail},#{messageImage},#{messageTitle})
     </insert>
 
     <select id="getAllMessage" resultMap="BaseResultMap">
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message ORDER BY message.message_creat_time desc
+        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message ORDER BY message.message_creat_time desc
     </select>
 
     <select id="getMessageByCategoryId" resultMap="BaseResultMap">
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE category_id=#{id} ORDER BY message.message_creat_time desc
+        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE category_id=#{id} ORDER BY message.message_creat_time desc
     </select>
     <select id="getMessageByCategoryAndKeyword" resultMap="BaseResultMap">
 
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE message.category_id=#{id}  AND  ( message.message_detail  LIKE BINARY CONCAT('%',('${keyword}'),'%') ) order by message.message_creat_time DESC
+        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE message.category_id=#{id}  AND  ( message.message_detail  LIKE BINARY CONCAT('%',('${keyword}'),'%') ) order by message.message_creat_time DESC
 
     </select>
     <select id="getMessageDetailByUserId" resultMap="BaseResultMap">
              SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE user_id=#{id} ORDER BY message.message_creat_time desc
+        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE user_id=#{id} ORDER BY message.message_creat_time desc
     </select>
     <select id="getMessageByKeyword" resultMap="BaseResultMap">
 
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time FROM message WHERE ( message.message_detail  LIKE BINARY CONCAT('%',('${keyword}'),'%') ) order by message.message_creat_time DESC
+        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE ( message.message_detail  LIKE BINARY CONCAT('%',('${keyword}'),'%') ) order by message.message_creat_time DESC
 
     </select>
 

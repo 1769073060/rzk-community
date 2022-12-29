@@ -22,7 +22,7 @@ public class SearchMessageController {
     private MessageImagesService messageImagesService;
 
     @PostMapping("/search/{categoryId}/{keyword}")
-    public List<Message> getMessageByCategoryAndKeyword(@PathVariable Integer categoryId, @PathVariable String keyword) {
+    public List<Message> getMessageByCategoryAndKeyword(@PathVariable String categoryId, @PathVariable String keyword) {
         List<Message> allMessage = messageDetailService.getMessageByCategoryAndKeyword(categoryId, keyword);
         return new GetMessageDetailController().getImage(allMessage, userService, messageImagesService);
 

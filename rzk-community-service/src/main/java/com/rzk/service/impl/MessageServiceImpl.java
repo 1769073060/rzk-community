@@ -51,7 +51,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageDao, Message> impleme
      * @param id
      * @return
      */
-    public List<Message> getMessageByCategoryId(Integer id) {
+    public List<Message> getMessageByCategoryId(String id) {
         return messageMapper.getMessageByCategoryId(id);
     }
 
@@ -59,7 +59,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageDao, Message> impleme
      * 在分类里查询信息
      */
 
-    public List<Message> getMessageByCategoryAndKeyword(Integer id, String keyword) {
+    public List<Message> getMessageByCategoryAndKeyword(String id, String keyword) {
         return messageMapper.getMessageByCategoryAndKeyword(id, keyword);
     }
 

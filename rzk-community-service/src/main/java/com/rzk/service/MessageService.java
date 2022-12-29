@@ -27,13 +27,13 @@ public interface MessageService extends IService<Message> {
      * @param id
      * @return
      */
-    public List<Message> getMessageByCategoryId(Integer id) ;
+    public List<Message> getMessageByCategoryId(String id) ;
 
     /**
      * 在分类里查询信息
      */
 
-    public List<Message> getMessageByCategoryAndKeyword(Integer id, String keyword);
+    public List<Message> getMessageByCategoryAndKeyword(String id, String keyword);
 
     /**
      * 全局查询

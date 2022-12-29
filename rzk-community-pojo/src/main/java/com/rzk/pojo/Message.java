@@ -40,7 +40,7 @@ public class Message{
     /**
      * 
      */
-	private Integer categoryId;
+	private String categoryId;
     /**
      * 
      */
@@ -69,6 +69,8 @@ public class Message{
      * 消息查看数量
      */
 	private Integer messageWatch;
+	private String messageImage;
+	private String messageTitle;
     /**
      * 
      */

@@ -35,6 +35,7 @@ public class FilterConfig implements WebMvcConfigurer {
         registry.addInterceptor(getMyInterceptor()).addPathPatterns("/**")
                 .excludePathPatterns("/swagger-ui/**")
                 .excludePathPatterns("/Login")
+                .excludePathPatterns("/ws")
                 .excludePathPatterns("/pc/video/upLoadBizhi")
                 .excludePathPatterns("/userVideo/showAllVideos")
                 .excludePathPatterns("/getMessage/getAllMessageDetail/**")
@@ -42,6 +43,9 @@ public class FilterConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/getMessage/getAllShop")
                 .excludePathPatterns("/getMessage/getAllSwiperMessage")
                 .excludePathPatterns("/getMessage/getAllCategoryMessage")
+                .excludePathPatterns("/getMessage/getCategoryMenuI")
+                .excludePathPatterns("/getMessage/getCategoryMenuII/**")
+                .excludePathPatterns("/categorymenu/**")
                 .excludePathPatterns("/getMessage/getAllNoticeMessage");
 
 
