@@ -30,6 +30,14 @@ public interface MessageService extends IService<Message> {
     public List<Message> getMessageByCategoryId(String id) ;
 
     /**
+     * 查询子菜单分类所有
+     *
+     * @param id
+     * @return
+     */
+    public List<Message> getMessageByCategoryIdClassification(String id) ;
+
+    /**
      * 在分类里查询信息
      */
 

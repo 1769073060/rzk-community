@@ -56,6 +56,16 @@ public class MessageServiceImpl extends ServiceImpl<MessageDao, Message> impleme
     }
 
     /**
+     * 查询分类所有
+     *
+     * @param id
+     * @return
+     */
+    public List<Message> getMessageByCategoryIdClassification(String id) {
+        return messageMapper.getMessageByCategoryIdClassification(id);
+    }
+
+    /**
      * 在分类里查询信息
      */
 

@@ -19,6 +19,7 @@
         <result column="message_creat_time" jdbcType="TIMESTAMP" property="messageCreatTime"/>
         <result column="message_image" jdbcType="VARCHAR" property="messageImage"/>
         <result column="message_title" jdbcType="VARCHAR" property="messageTitle"/>
+        <result column="category_value_id" jdbcType="VARCHAR" property="categoryValueId"/>
     </resultMap>
 
 
@@ -48,6 +49,10 @@
     <select id="getMessageByCategoryId" resultMap="BaseResultMap">
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
         message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE category_id=#{id} ORDER BY message.message_creat_time desc
+    </select>
+    <select id="getMessageByCategoryIdClassification" resultMap="BaseResultMap">
+    SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
+           message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE category_value_id=#{id} ORDER BY message.message_creat_time desc
     </select>
     <select id="getMessageByCategoryAndKeyword" resultMap="BaseResultMap">
 

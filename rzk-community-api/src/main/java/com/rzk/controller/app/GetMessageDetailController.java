@@ -96,6 +96,40 @@ public class GetMessageDetailController {
         //return getImage(allMessage, userService, messageImagesService);
     }
 
+    @PostMapping("/getMessage/getAllMessageDetailClassification/{categoryId}/{pageNumber}")
+    public List<Message> getAllMessageDetailClassification(@PathVariable String categoryId, @PathVariable Integer pageNumber) {
+        PageHelper.startPage(pageNumber, 8);
+
+        PageInfo<Message> pageInfo = new PageInfo<Message>(messageDetailService.getMessageByCategoryIdClassification(categoryId));
+
+        if (pageInfo.getPageNum() < pageNumber) {
+            List list1 = new LinkedList();
+            list1.add(200);
+            return list1;
+        }
+        List<Message> allMessage = pageInfo.getList();
+
+        for (int i = 0; i < allMessage.size(); i++) {
+            QueryWrapper<User> queryWrapperUser = new QueryWrapper<>();
+            queryWrapperUser.eq("user_id",allMessage.get(i).getUserId());
+            log.info("allMessage.get(i).getUserId()=================="+allMessage.get(i).getUserId());
+
+            User byId = userService.getOne(queryWrapperUser);
+            log.info("byId=================="+byId);
+
+            allMessage.get(i).setUser(byId);
+            MessageImages messageImages = new MessageImages();
+            messageImages.setMessageId(allMessage.get(i).getMessageId());
+            QueryWrapper<MessageImages> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("message_id",messageImages.getMessageId());
+
+            allMessage.get(i).setMessageImages(messageImagesService.list(queryWrapper));
+        }
+        return allMessage;
+
+        //return getImage(allMessage, userService, messageImagesService);
+    }
+
     public List<Message> getImage(List<Message> allMessage, UserService userService, MessageImagesService messageImagesService) {
         for (int i = 0; i < allMessage.size(); i++) {
             QueryWrapper<User> queryWrapperUserId = new QueryWrapper<>();

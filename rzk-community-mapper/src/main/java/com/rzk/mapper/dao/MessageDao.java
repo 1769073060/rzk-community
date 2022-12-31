@@ -24,6 +24,8 @@ public interface MessageDao extends BaseMapper<Message> {
 
  List<Message> getMessageByCategoryId(String id);
 
+ List<Message> getMessageByCategoryIdClassification(String id);
+
  List<Message> getMessageByCategoryAndKeyword(@Param("id") String id, @Param("keyword") String keyword);
 
  List<Message> getMessageDetailByUserId (Integer userId);

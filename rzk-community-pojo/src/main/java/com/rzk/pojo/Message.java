@@ -71,6 +71,9 @@ public class Message{
 	private Integer messageWatch;
 	private String messageImage;
 	private String messageTitle;
+
+	//子菜单
+	private String categoryValueId;
     /**
      * 
      */

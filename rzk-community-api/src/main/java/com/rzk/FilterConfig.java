@@ -39,6 +39,7 @@ public class FilterConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/pc/video/upLoadBizhi")
                 .excludePathPatterns("/userVideo/showAllVideos")
                 .excludePathPatterns("/getMessage/getAllMessageDetail/**")
+                .excludePathPatterns("/getMessage/getAllMessageDetailClassification/**")
                 .excludePathPatterns("/getMessage/getLostMessage")
                 .excludePathPatterns("/getMessage/getAllShop")
                 .excludePathPatterns("/getMessage/getAllSwiperMessage")
