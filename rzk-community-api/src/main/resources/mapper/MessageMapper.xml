@@ -29,7 +29,8 @@
     </sql>
     <select id="getLostMessage" resultMap="BaseResultMap">
         SELECT message_id, user_id_anonymity, user_id, category_id, user_phone, user_major, user_level,
-        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE category_id=02 ORDER BY message.message_creat_time desc limit 1
+        message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title,category_value_id FROM message ORDER BY message.message_creat_time desc limit 1
+        <!--message_detail, message_share, message_comment, message_watch, message_creat_time,message_image,message_title FROM message WHERE category_id=02 ORDER BY message.message_creat_time desc limit 1-->
     </select>
     <insert id="insertMessageDetail">
         <selectKey resultType="Integer" keyProperty="messageId">

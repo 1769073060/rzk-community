@@ -58,8 +58,6 @@ public class LoginController {
     @Value("${minio.bucketName}")
     private String bucketName;
 
-    @Value("${url.http}")
-    private String utlHttp;
 
     @Autowired
     private MinioUtils minioUtils;
@@ -190,7 +188,7 @@ public class LoginController {
             return JSONResult.errorMsg("上传功能出错");
         }
         User user = new User();
-        user.setUserAvatar(utlHttp+uploadFile);
+        user.setUserAvatar(uploadFile);
         UpdateWrapper updateWrapper = new UpdateWrapper();
         updateWrapper.eq("user_id", userId);
         userService.update(user,updateWrapper);
