@@ -3,13 +3,13 @@ package com.rzk.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.rzk.pojo.Message;
 import com.rzk.pojo.consts.WxConsts;
 import com.rzk.pojo.wxserver.*;
 import com.rzk.service.IReplyMessageService;
 import com.rzk.service.IWxResourceService;
 import com.rzk.pojo.consts.WxResourcesConsts;
 import com.rzk.service.IWxUserService;
+import com.rzk.utils.rabbitmq.ConfirmConfig;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,6 +20,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -51,8 +52,18 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
     public BaseMessage replyTextBlackFLagMessage(Map<String, String> requestMap) {
         StringBuffer stringBuffer = new StringBuffer();
         TextMessage textMessage = null;
-        stringBuffer.append("由于您之前取消关注过本公众号，所以无法提供本服务！\n");
-        textMessage = new TextMessage(requestMap, stringBuffer.toString());
+        WxResource wxResource = null;
+        QueryWrapper<WxResource> queryWrapper = new QueryWrapper();
+
+        wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "解除限制"));
+
+        if (wxResource != null) {
+            stringBuffer.append("由于您之前取消关注过本公众号，所以无法提供本服务！解除限制，");
+            stringBuffer.append("<a href=\"" + wxResource.getContent() + "\">点击解封</a>");
+            textMessage = new TextMessage(requestMap, stringBuffer.toString());
+        } else {
+            textMessage = new TextMessage(requestMap, notResourceContent);
+        }
         return textMessage;
 
     }
@@ -84,6 +95,10 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "录屏工具提示语"));
                 textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
+            if (msg.equals("pandownload") || msg.equals("PanDownload")) {
+                wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "PanDownload提示语"));
+                textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
+            }
             if (msg.equals("小说")) {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "小说提示语"));
                 textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
@@ -108,6 +123,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "虚拟机提示语"));
                 textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
+
             ////////////////////////////////////////////////////////////以上是作为提示用户输入
             if (msg.equals("win10家庭版激活码")) {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "win10家庭版激活码"));
@@ -121,10 +137,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 }
             }
             if (msg.equals("win10激活码") || msg.equals("win激活码") || msg.equals("windows激活码")) {
-                stringBuffer.append("可回复：\n");
-                stringBuffer.append("win10家庭版激活码\n");
-                stringBuffer.append("获取");
-                textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "win10家庭版激活码提示语"));
+                textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
             if (msg.equals("win10")) {
                 stringBuffer.append("你是在找win10激活码吗：\n");
@@ -134,38 +148,29 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
             }
             if (msg.equals("idea开发工具") || msg.equals("idea")) {
-                stringBuffer.append("你是在找idea开发工具吗：\n");
-                stringBuffer.append("可输入\n");
-                stringBuffer.append("IDEA2021\n")
-                ;
-                stringBuffer.append("IDEA2022\n");
-                stringBuffer.append("获取");
-                textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "idea开发工具提示语"));
+                textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
             if (msg.equals("idea激活码")) {
-                wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "idea激活码"));
-
-                stringBuffer.append(wxResourceLzy.getContent());
-
-                textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "idea激活码"));
+                textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
             if (msg.equals("谢啦") || msg.equals("谢谢") || msg.equals("谢了") || msg.equals("多谢")) {
-
                 stringBuffer.append("不客气~");
-
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
 
             }
             if (msg.equals("你好") || msg.equals("好") || msg.equals("你好啊") || msg.equals("你好呀")) {
-
                 stringBuffer.append("好好好，我很好");
-
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
             }
             if (msg.equals("小程序") || msg.equals("壁纸")) {
-
-                stringBuffer.append("#小程序://睿共享/NJSLGmTmZGOnYYe");
+                stringBuffer.append("#小程序://共享工具库/3C1QrqGk0dJBROx");
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
+            }
+            if (msg.equals("webstrom") || msg.equals("webstorm")) {
+                wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "webstorm开发工具提示语"));
+                textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
             //解压软件
             if (msg.equals("NanaZip") || msg.equals("nanazip") || msg.equals("Nanazip") || msg.equals("Namazip") || msg.equals("NamaZip")) {
@@ -173,29 +178,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "NanaZip解压缩软件百度云"));
                 wxResourceKk = iWxResourceService.getOne(queryWrapperKk.eq("file_name", "NanaZip解压缩软件夸克"));
                 if (wxResourceLzy != null && wxResourceBdy != null && wxResourceKk != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceKk.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceKk.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceKk.getFetchCode() + "\n" + "\n");
-                    stringBuffer.append(wxResourceBdy.getArticleAddresses() != null || wxResourceLzy.getArticleAddresses() != null ? "<a href=\"" +
-                            wxResourceBdy.getArticleAddresses() +
-                            "\">使用教程</a>"
-                            :
-                            "");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageThree(wxResourceBdy,wxResourceLzy, wxResourceKk,stringBuffer, textMessage, requestMap);
+
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -206,29 +190,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "桌面脑图思维导图DesktopNaotu百度云"));
                 wxResourceKk = iWxResourceService.getOne(queryWrapperKk.eq("file_name", "桌面脑图思维导图DesktopNaotu夸克"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceKk.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceKk.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceKk.getFetchCode() + "\n" + "\n");
-                    stringBuffer.append(wxResourceBdy.getArticleAddresses() != null || wxResourceLzy.getArticleAddresses() != null ? "<a href=\"" +
-                            wxResourceBdy.getArticleAddresses() +
-                            "\">使用教程</a>"
-                            :
-                            "");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageThree(wxResourceBdy,wxResourceLzy, wxResourceKk,stringBuffer, textMessage, requestMap);
+
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -239,29 +202,21 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "打字音效tickeys百度云"));
                 wxResourceKk = iWxResourceService.getOne(queryWrapperKk.eq("file_name", "打字音效tickeys夸克"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceKk.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceKk.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceKk.getFetchCode() + "\n" + "\n");
-                    stringBuffer.append(wxResourceBdy.getArticleAddresses() != null || wxResourceLzy.getArticleAddresses() != null ? "<a href=\"" +
-                            wxResourceBdy.getArticleAddresses() +
-                            "\">使用教程</a>"
-                            :
-                            "");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageThree(wxResourceBdy,wxResourceLzy, wxResourceKk,stringBuffer, textMessage, requestMap);
+
+                    } else {
+                    textMessage = new TextMessage(requestMap, notResourceContent);
+                }
+            }
+            //微信检测软件
+            if (msg.equals("微信检测")
+                    || msg.equals("微信检测好友")
+                    || msg.equals("微信好友检测")) {
+                wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "微信检测好友蓝奏云"));
+                wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "微信检测好友百度云"));
+                if (wxResourceLzy != null && wxResourceBdy != null) {
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
+
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -273,23 +228,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "搜题神器蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "搜题神器百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode() + "\n");
-                    stringBuffer.append(wxResourceBdy.getArticleAddresses() != null || wxResourceLzy.getArticleAddresses() != null ? "<a href=\"" +
-                            wxResourceBdy.getArticleAddresses() +
-                            "\">使用教程</a>"
-                            :
-                            "");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -304,24 +243,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "BeyondCompare蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "BeyondCompare百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ? "<a href=\"" +
-                            wxResourceBdy.getArticleAddresses() +
-                            "\">使用教程</a>"
-                            :
-                            "");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
+
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -331,24 +254,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "分流抢票Bypass蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "分流抢票Bypass百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ? "<a href=\"" +
-                            wxResourceBdy.getArticleAddresses() +
-                            "\">使用教程</a>"
-                            :
-                            "");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
+
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -358,18 +265,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "CopyTranslator蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "CopyTranslator百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
+
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -379,12 +276,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
             if (msg.equals("CustomCursor") || msg.equals("customcursor") || msg.equals("Customcursor")) {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "CustomCursor蓝奏云"));
                 if (wxResourceLzy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageLzy(wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -394,18 +286,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "typora蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "typora百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -452,18 +333,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "navicat12蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "navicat12百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -473,18 +343,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "CountBoard蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "CountBoard百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append(wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -523,7 +382,22 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "RustDesk"));
                 textMessage = textMessageLzy(wxResourceLzy, stringBuffer, textMessage, requestMap);
             }
+            //wps2023
+            if (msg.equals("wps2023app") || msg.equals("wps2023手机版")) {
+                wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "wps2023app"));
+                textMessage = textMessageLzy(wxResourceLzy, stringBuffer, textMessage, requestMap);
+            }
 
+            //VMware
+            if (msg.equals("chat-gpt") || msg.equals("chat-GPT") || msg.equals("chatGPT")|| msg.equals("chatgpt") || msg.equals("chatGPT4")) {
+                WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "chatGPT"));
+
+                    stringBuffer.append("<a href=\"" +
+                            wxResource.getUrl() +
+                            "\">体验链接</a>");
+                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+
+            }
 
             //抖音特效软件
             if (msg.equals("像塑") || msg.equals("抖音特效软件")) {
@@ -654,18 +528,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "Office自定义安装工具蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "Office自定义安装工具百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("备用地址 " + wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -675,18 +538,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "Office自定义安装工具蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "Office自定义安装工具百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("备用地址 " + wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -696,18 +548,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "Captura蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "Captura百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("备用地址 " + wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -742,98 +583,37 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
             }
+            //PanDownload蓝奏云
+            if ( msg.equals("pandownload公测版") || msg.equals("PanDownload公测版 ") || msg.equals("PanDownload公测版")) {
+                wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "PanDownload蓝奏云"));
+                wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "PanDownload百度云"));
+                if (wxResourceLzy != null && wxResourceBdy != null) {
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
+                } else {
+                    textMessage = new TextMessage(requestMap, notResourceContent);
+                }
+            }
+            //屏幕录像专家
+            if ( msg.equals("掌上英语四级1") || msg.equals("掌上英语四级1.0") || msg.equals("掌上英语1.0")) {
+                wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "掌上英语四级蓝奏云"));
+                wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "掌上英语四级百度云"));
+                if (wxResourceLzy != null && wxResourceBdy != null) {
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
+                } else {
+                    textMessage = new TextMessage(requestMap, notResourceContent);
+                }
+            }
             //屏幕录像专家
             if (msg.equals("屏幕录像专家2022") || msg.equals("屏幕录像2022") || msg.equals("录屏录像专家") || msg.equals("屏幕录像专家")) {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "屏幕录像专家蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "屏幕录像专家百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("备用地址 " + wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
             }
-            if (msg.equals("pc梯子") || msg.equals("pctz") || msg.equals("pcTZ")) {
-                wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "Pctz蓝奏云"));
-                System.out.println("wxResourceLzy{}==========>" + wxResourceLzy);
-                wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "Pctz百度云"));
-                System.out.println("wxResourceBdy{}==========>" + wxResourceBdy);
 
-                if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("备用地址 " + wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
-                    stringBuffer.append("\n");
-                    stringBuffer.append("<a href=\"" +
-                            "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247483937&idx=1&sn=f35e41a3ea78b9a349228ae9212a9296&chksm=c334fbf6f44372e01db1157583ba7687b4e3ab9ec468d32382d8e7f515207a346f68e1729e18&token=369971061&lang=zh_CN#rd" +
-                            "\">使用教程</a>");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
-                } else {
-                    textMessage = new TextMessage(requestMap, notResourceContent);
-                }
-            }
-            //安卓tz
-            if (msg.equals("android梯子") || msg.equals("android梯子") || msg.equals("androidtz") || msg.equals("androidTZ")) {
-                WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "Androidtz"));
-                if (wxResource != null) {
-                    stringBuffer.append(wxResource.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResource.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResource.getFetchCode());
-                    stringBuffer.append("\n");
-                    stringBuffer.append("<a href=\"" +
-                            "https://mp.weixin.qq.com/s/MdxpGV-Hkjw3hXUQ7jgt6w" +
-                            "\">使用教程</a>");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
-                } else {
-                    textMessage = new TextMessage(requestMap, notResourceContent);
-                }
-            }
-            /**
-             * tz
-             */
-            if (msg.equals("tz") || msg.equals("梯子")) {
-
-                stringBuffer.append("ios系统可回复:iostz\n");
-                stringBuffer.append("安卓可看以下这篇文章教程: \n");
-                stringBuffer.append("<a href=\"" +
-                        "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247484252&idx=1&sn=08f0db2fd0728852c4ddda6b85f51ed6&chksm=c334fa8bf443739d6cb5114a81ddaa456926000646251fc419d6e1b489f13189f9ef5418c603&token=2106554294&lang=zh_CN#rd" +
-                        "\">文章</a>");
-                return new TextMessage(requestMap, stringBuffer.toString());
-
-            }
-            /**
-             * ios梯子连接
-             */
-            if (msg.equals("iostz教程") || msg.equals("iostz") || msg.equals("iosfq")) {
-                List<Articles> articles = new ArrayList<>();
-                articles.add(new Articles(new Item(
-                        "iOS神器“小火箭”",
-                        "iOS神器“小火箭”｜详细安装教程",
-                        "https://mmbiz.qlogo.cn/mmbiz_jpg/WPLhCDiabVZepMlNlwyXfoQVk2FaQhjmgvhQWMFm39m6EE4Hvb9q3mYULA2NZ3YNWkgduNWRMAMial9a0mTFnA6w/0?wx_fmt=jpeg",
-                        "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247484262&idx=1&sn=996ff3280652726584542ae274c4a4c2&chksm=c334fab1f44373a76690e1a6d75258e891ce6d8fce5cf6bea801cbfd2ec566c2cdcca03ff635&token=1596680842&lang=zh_CN#rd")));
-                NewsInfoMessage newsInfoMessage = new NewsInfoMessage(requestMap, articles);
-                return newsInfoMessage;
-            }
             /**
              * 淘宝运营资料
              */
@@ -859,24 +639,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "Paperpass蓝奏云"));
                 wxResourceBdy = iWxResourceService.getOne(queryWrapperRes.eq("file_name", "Paperpass百度云"));
                 if (wxResourceLzy != null && wxResourceBdy != null) {
-                    stringBuffer.append(wxResourceLzy.getFileName() + "\n");
-                    stringBuffer.append("教程链接:");
-                    stringBuffer.append(wxResourceLzy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("备用地址 " + wxResourceBdy.getFileName() + "\n");
-                    stringBuffer.append("教程链接:");
-                    stringBuffer.append(wxResourceBdy.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceBdy.getFetchCode());
+                    textMessage = textMessageTwo(wxResourceBdy,wxResourceLzy, stringBuffer, textMessage, requestMap);
 
-                    stringBuffer.append("\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("<a href=\"" +
-                            "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247484163&idx=1&sn=6fc27346ccb728315f694cfaab1ecbc0&chksm=c334fad4f44373c22fb232f3674b3514e8048bee87eab24076732f60394d94aaa7b991bec77c#rd" +
-                            "\">使用教程</a>");
-                    textMessage = new TextMessage(requestMap, stringBuffer.toString());
                 } else {
                     textMessage = new TextMessage(requestMap, notResourceContent);
                 }
@@ -2406,11 +2170,11 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 }
 
             }
-            if (msg.equals("fm")) {
+            if (msg.equals("红包封页") || msg.equals("红包封面") || msg.equals("封面") || msg.equals("封页")) {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "fm"));
                 textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
-            if (msg.equals("红包封页") || msg.equals("红包封面") || msg.equals("封面") || msg.equals("封页")) {
+            if (msg.equals("fm")) {
                 stringBuffer.append("最新封面：点击☞#红包封面 领取！");
                 stringBuffer.append("\n");
                 stringBuffer.append(
@@ -2527,12 +2291,13 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
             if ("".equals(stringBuffer.toString())) {
                 WxResource wxResourceMsg = iWxResourceService.getOne(queryWrapper.eq("file_name", msg));
                 if (wxResourceMsg != null) {
-                    stringBuffer.append(wxResourceMsg.getFileName() + "\n");
-                    stringBuffer.append("链接:");
-                    stringBuffer.append(wxResourceMsg.getUrl() + "\n");
-                    stringBuffer.append("提取码:");
-                    stringBuffer.append(wxResourceMsg.getFetchCode());
-                    return new TextMessage(requestMap, stringBuffer.toString());
+                    textMessage = textMessageBdy(wxResourceMsg, stringBuffer, textMessage, requestMap);
+                    StringBuffer sb = new StringBuffer();
+                    sb.append("\n");
+                    sb.append("\n");
+                    sb.append("本号取关后，即使再次关注也将无法提供服务，切记切记");
+                    textMessage.setContent(textMessage.getContent() + sb.toString());
+                    return textMessage;
                 } else {
                     WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "资源大全"));
 
@@ -2570,6 +2335,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
             logger.info("返回回复文本消息" + textMessage);
 
         }
+
         StringBuffer sb = new StringBuffer();
         sb.append("\n");
         sb.append("\n");
@@ -2693,7 +2459,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                         "office，录屏，重装系统(待更新系列)，小说，XMind(在更新系列)，\n" +
                         "win10激活工具(待更新系列)，Win11(待更新系列)，分流抢票神器(待更新系列)，" +
                         "等等......");
-                stringBuffer.append("<a data-miniprogram-appid=\"wx91abf242a5346a3c\" data-miniprogram-path=\"pages/category/category.html?categoryId=00&categoryName=留言版\" href=\"备用网址\" data-miniprogram-type=\"text\">留言</a>\n");
+                stringBuffer.append("\n");
+                stringBuffer.append("<a data-miniprogram-appid=\"wx91abf242a5346a3c\" data-miniprogram-path=\"pages/gallery/gallery.html\" href=\"备用网址\" data-miniprogram-type=\"text\">精美壁纸</a>\n");
                 /** stringBuffer.append("<a href=\"" +
                  "http://www.ruizhukai.com:88/" +
                  "\">欢迎大家来访在线聊天室</a>");**/
@@ -2731,9 +2498,10 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 stringBuffer.append("快捷回复方式：\n" +
                         "比如发送：壁纸，Adobe，" +
                         "office，录屏，重装系统(待更新系列)，小说，XMind(在更新系列)，\n" +
-                        "win10激活工具(待更新系列)，Win11(待更新系列)，分流抢票神器(待更新系列)，" +
+                        "win10激活工具(待更新系列)，Win11(待更新系列)，分流抢票神器，" +
                         "等等......");
-                stringBuffer.append("<a data-miniprogram-appid=\"wx91abf242a5346a3c\" data-miniprogram-path=\"pages/category/category.html?categoryId=00&categoryName=留言版\" href=\"备用网址\" data-miniprogram-type=\"text\">留言</a>\n");
+                stringBuffer.append("\n");
+                        stringBuffer.append("<a data-miniprogram-appid=\"wx91abf242a5346a3c\" data-miniprogram-path=\"pages/gallery/gallery.html\" href=\"备用网址\" data-miniprogram-type=\"text\">精美壁纸</a>\n");
                 /** stringBuffer.append("<a href=\"" +
                  "http://www.ruizhukai.com:88/" +
                  "\">欢迎大家来访在线聊天室</a>");**/
@@ -2799,14 +2567,28 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
         return stringBuffer;
     }
 
+    /**
+     * 单个蓝奏云资源
+     * @param wxResourceLzy
+     * @param stringBuffer
+     * @param textMessage
+     * @param requestMap
+     * @return
+     */
     TextMessage textMessageLzy(WxResource wxResourceLzy, StringBuffer stringBuffer, TextMessage textMessage, Map<String, String> requestMap) {
-
         if (wxResourceLzy != null) {
             stringBuffer.append(wxResourceLzy.getFileName() + "\n");
             stringBuffer.append("链接:");
-            stringBuffer.append(wxResourceLzy.getUrl());
+            stringBuffer.append(wxResourceLzy.getUrl() + "\n");
             stringBuffer.append("提取码:");
-            stringBuffer.append(wxResourceLzy.getFetchCode());
+            stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
+            stringBuffer.append(!"".equals(wxResourceLzy.getArticleAddresses())
+                    ? "<a href=\"" +
+                    wxResourceLzy.getArticleAddresses() +
+                    "\">使用教程</a>"
+                    :
+                    "");
+
             textMessage = new TextMessage(requestMap, stringBuffer.toString());
         } else {
             textMessage = new TextMessage(requestMap, notResourceContent);
@@ -2814,14 +2596,102 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
         return textMessage;
     }
 
+    /**
+     * 单个百度云资源
+      * @param wxResourceBdy
+     * @param stringBuffer
+     * @param textMessage
+     * @param requestMap
+     * @return
+     */
     TextMessage textMessageBdy(WxResource wxResourceBdy, StringBuffer stringBuffer, TextMessage textMessage, Map<String, String> requestMap) {
-
         if (wxResourceBdy != null) {
             stringBuffer.append(wxResourceBdy.getFileName() + "\n");
             stringBuffer.append("链接:");
-            stringBuffer.append(wxResourceBdy.getUrl());
+            stringBuffer.append(wxResourceBdy.getUrl() + "\n");
             stringBuffer.append("提取码:");
-            stringBuffer.append(wxResourceBdy.getFetchCode());
+            stringBuffer.append(wxResourceBdy.getFetchCode() + "\n");
+            stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses())
+                     ? "<a href=\"" +
+                    wxResourceBdy.getArticleAddresses() +
+                    "\">使用教程</a>"
+                    :
+                    "");
+            textMessage = new TextMessage(requestMap, stringBuffer.toString());
+        } else {
+            textMessage = new TextMessage(requestMap, notResourceContent);
+        }
+        return textMessage;
+    }
+
+
+    /**
+     * 百度云+蓝奏云
+     * @param wxResourceLzy
+     * @param stringBuffer
+     * @param textMessage
+     * @param requestMap
+     * @return
+     */
+    TextMessage textMessageTwo(WxResource wxResourceBdy,WxResource wxResourceLzy, StringBuffer stringBuffer, TextMessage textMessage, Map<String, String> requestMap) {
+        if (wxResourceLzy != null && wxResourceBdy != null) {
+
+
+            stringBuffer.append(wxResourceLzy.getFileName() + "\n");
+            stringBuffer.append("链接:");
+            stringBuffer.append(wxResourceLzy.getUrl() + "\n");
+            stringBuffer.append("提取码:");
+            stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
+            stringBuffer.append("\n");
+            stringBuffer.append("备用地址 " + wxResourceBdy.getFileName() + "\n");
+            stringBuffer.append("链接:");
+            stringBuffer.append(wxResourceBdy.getUrl() + "\n");
+            stringBuffer.append("提取码:");
+            stringBuffer.append(wxResourceBdy.getFetchCode()+ "\n");
+
+            stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ? "<a href=\"" +
+                    wxResourceBdy.getArticleAddresses() +
+                    "\">使用教程</a>"
+                    :
+                    "");
+            textMessage = new TextMessage(requestMap, stringBuffer.toString());
+        } else {
+            textMessage = new TextMessage(requestMap, notResourceContent);
+        }
+        return textMessage;
+    }
+    /**
+     * 百度云+蓝奏云+夸克云
+     * @param wxResourceLzy
+     * @param stringBuffer
+     * @param textMessage
+     * @param requestMap
+     * @return
+     */
+    TextMessage textMessageThree(WxResource wxResourceBdy,WxResource wxResourceLzy,WxResource wxResourceKk,StringBuffer stringBuffer, TextMessage textMessage, Map<String, String> requestMap) {
+        if (wxResourceLzy != null && wxResourceBdy != null) {
+            stringBuffer.append(wxResourceLzy.getFileName() + "\n");
+            stringBuffer.append("链接:");
+            stringBuffer.append(wxResourceLzy.getUrl() + "\n");
+            stringBuffer.append("提取码:");
+            stringBuffer.append(wxResourceLzy.getFetchCode() + "\n");
+            stringBuffer.append("\n");
+            stringBuffer.append(wxResourceBdy.getFileName() + "\n");
+            stringBuffer.append("链接:");
+            stringBuffer.append(wxResourceBdy.getUrl() + "\n");
+            stringBuffer.append("提取码:");
+            stringBuffer.append(wxResourceBdy.getFetchCode() + "\n");
+            stringBuffer.append("\n");
+            stringBuffer.append(wxResourceKk.getFileName() + "\n");
+            stringBuffer.append("链接:");
+            stringBuffer.append(wxResourceKk.getUrl() + "\n");
+            stringBuffer.append("提取码:");
+            stringBuffer.append(wxResourceKk.getFetchCode() + "\n" + "\n");
+            stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ? "<a href=\"" +
+                    wxResourceBdy.getArticleAddresses() +
+                    "\">使用教程</a>"
+                    :
+                    "");
             textMessage = new TextMessage(requestMap, stringBuffer.toString());
         } else {
             textMessage = new TextMessage(requestMap, notResourceContent);

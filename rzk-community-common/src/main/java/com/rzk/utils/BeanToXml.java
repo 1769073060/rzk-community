@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.*;
 
@@ -80,6 +82,20 @@ public class BeanToXml {
             }
         }
         return result;
+    }
+
+    public static Object convertXmlStrToObject(Class clazz, String xmlStr) {
+        Object xmlObject = null;
+        try {
+            JAXBContext context = JAXBContext.newInstance(clazz);
+            // 进行将Xml转成对象的核心接口
+            Unmarshaller unmarshal = context.createUnmarshaller();
+            StringReader sr = new StringReader(xmlStr);
+            xmlObject = unmarshal.unmarshal(sr);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return xmlObject;
     }
 
     public static void main(String[] args) throws DocumentException {

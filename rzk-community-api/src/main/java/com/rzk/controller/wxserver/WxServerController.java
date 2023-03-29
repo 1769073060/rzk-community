@@ -3,18 +3,20 @@ package com.rzk.controller.wxserver;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.rzk.config.GimisXml;
+import com.rzk.pojo.wxserver.BaseMessage;
 import com.rzk.pojo.wxserver.Token;
 import com.rzk.pojo.wxserver.WxResource;
 import com.rzk.service.IRzkVerificationCodeService;
 import com.rzk.service.IWxResourceService;
 import com.rzk.service.IWxService;
 
-import com.rzk.utils.HttpClient;
-import com.rzk.utils.HttpConstant;
-import com.rzk.utils.MsgUtil;
-import com.rzk.utils.SignUtil;
+import com.rzk.utils.*;
+import com.rzk.utils.rabbitmq.ConfirmConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +42,8 @@ public class WxServerController {
     private RedisTemplate<String,Object> redisTemplate;
     @Resource
     private IWxService wxService;
+    @Resource
+    private RabbitTemplate rabbitTemplate;
 
     /**
      *
@@ -90,6 +94,21 @@ public class WxServerController {
             // 消息类型
             logger.info("controller======>{}"+respContent);
 
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    CorrelationData correlationData = new CorrelationData("1");
+                    rabbitTemplate.convertAndSend(
+                            ConfirmConfig.CONFIRM_EXCHANGE_NAME,
+                            ConfirmConfig.CONFIRM_EXCHANGE_ROUTING_KEY,
+                            respContent,correlationData);
+
+                    logger.info("================================");
+                    logger.info("发送的消息内容为：{}", respContent);
+                    logger.info("================================");
+
+                }
+            }).start();
             return respContent;
         } catch (Exception e) {
             e.printStackTrace();
@@ -98,6 +117,22 @@ public class WxServerController {
         return "";
     }
 
+    public String validate(String requestMap) {
+        // xml格式的消息数据
+        String respXml = null;
+        // 默认返回的文本消息内容
+        String respContent;
+        try {
+
+            // 消息类型
+            logger.info("controller======>{}"+requestMap);
+
+            return requestMap;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 
     /**
      *

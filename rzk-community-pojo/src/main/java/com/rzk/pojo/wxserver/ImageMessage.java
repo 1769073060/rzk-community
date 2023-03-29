@@ -4,6 +4,7 @@ package com.rzk.pojo.wxserver;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -15,7 +16,7 @@ import java.util.Map;
  * @Version : v1.0
  */
 @XmlRootElement(name = "xml")
-public class ImageMessage extends BaseMessage {
+public class ImageMessage extends BaseMessage implements Serializable  {
     @XmlElement(name = "Image")
     private Image image;
 

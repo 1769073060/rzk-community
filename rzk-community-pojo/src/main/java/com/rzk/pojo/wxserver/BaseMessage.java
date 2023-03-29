@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -16,7 +17,7 @@ import java.util.Map;
  * @Version : v1.0
  */
 @Data
-public class BaseMessage {
+public class BaseMessage implements Serializable {
     @XmlElement(name = "ToUserName")
     private String toUserName;
     @XmlElement(name = "FromUserName")
@@ -65,5 +66,15 @@ public class BaseMessage {
     @XmlTransient
     public void setMsgType(String msgType) {
         this.msgType = msgType;
+    }
+
+    @Override
+    public String toString() {
+        return "BaseMessage{" +
+                "toUserName='" + toUserName + '\'' +
+                ", fromUserName='" + fromUserName + '\'' +
+                ", createTime='" + createTime + '\'' +
+                ", msgType='" + msgType + '\'' +
+                '}';
     }
 }

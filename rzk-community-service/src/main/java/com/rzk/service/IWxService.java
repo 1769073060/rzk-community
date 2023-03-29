@@ -20,5 +20,11 @@ public interface IWxService {
      */
     public String getResponse(Map<String, String> requestMap);
 
+    /**
+     * 用于处理所有的事件和消息的回复
+     * @param requestMap
+     * @return
+     */
+    public String getResponses(Map<String, String> requestMap);
 
 }

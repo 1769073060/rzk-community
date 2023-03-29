@@ -3,16 +3,18 @@ package com.rzk.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.rzk.pojo.consts.WxConsts;
-import com.rzk.pojo.wxserver.BaseMessage;
-import com.rzk.pojo.wxserver.TextMessage;
-import com.rzk.pojo.wxserver.WxUser;
+import com.rzk.pojo.consts.WxResourcesConsts;
+import com.rzk.pojo.wxserver.*;
 import com.rzk.service.IReplyMessageService;
 import com.rzk.service.ITbTaoZheKouMessageService;
 import com.rzk.service.IWxService;
 import com.rzk.service.IWxUserService;
 import com.rzk.utils.BeanToXml;
+import com.rzk.utils.rabbitmq.ConfirmConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,7 +40,8 @@ public class WxServiceImpl implements IWxService {
     private ITbTaoZheKouMessageService iTbTaoZheKouMessageService;
     @Resource
     private IWxUserService iWxUserService;
-
+    @Resource
+    private RabbitTemplate rabbitTemplate;
     /**
      * 用于处理所有的事件和消息的回复
      * @param requestMap
@@ -148,11 +151,48 @@ public class WxServiceImpl implements IWxService {
         if (message!=null){
             logger.info("消息======>{}:"+message);
             logger.info("消息======>{}:"+ BeanToXml.objToXml(message));
+
             return BeanToXml.objToXml(message);
         }
 
         return null;
     }
 
+    /**
+     * 用于处理所有的事件和消息的回复的追加
+     * @param requestMap
+     * @return
+     */
+    public String getResponses(Map<String, String> requestMap) {
+        BaseMessage message = null;
+        logger.info("RabbitMQ消息数据{}:"+requestMap);
 
+        /**
+        //接收到的用户消息只需要获取到消息类型即可
+        String msgType = requestMap.get("MsgType");
+        String fromUserName = requestMap.get("fromUserName").toString();
+        String toUserName = requestMap.get("toUserName").toString();
+        BaseMessage msg = new BaseMessage();
+        msg.setToUserName(toUserName);
+        msg.setFromUserName(fromUserName);
+        System.out.println(requestMap.get("fromUserName").toString());
+        //message.setFromUserName();
+        //message.setToUserName(requestMap.get("toUserName").toString());
+
+
+        Image image = new Image();
+        image.setMediaId(WxResourcesConsts.Office_Media_Id_2010);
+        message = new ImageMessage(requestMap, image);
+        message.setToUserName(msg.getToUserName());
+        message.setFromUserName(msg.getFromUserName());
+        System.out.println("RabbitMQ:-------->"+message);
+        if (message!=null){
+            logger.info("消息======>{}:"+ BeanToXml.objToXml(message));
+            BaseMessage finalMessage = message;
+
+            return BeanToXml.objToXml(message);
+        }**/
+
+        return null;
+    }
 }

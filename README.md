@@ -53,3 +53,33 @@ echo "启动jar包"
 #最后启动jar包并把日志输出到指定的文件中以便查看
 nohup java -Xms800m -Xmx800m -XX:PermSize=256m -XX:MaxPermSize=512m -XX:MaxNewSize=512m -jar /opt/jar/rzk-community/rzk-community-api.jar --server.port=8099 -Dspring.config.additional-location=/opt/jar/rzk-community/config/application.yml >> /usr/local/nohup.out 2>&1 &
 # --spring.profiles.active=dev   > /usr/local/nohup.out 2>&1 &
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 服务器重启需要重启的服务
+
+## redis
+
+```shell
+[root@rzk redis]# cd /usr/local/redis/bin
+[root@rzk bin]# ./redis-server /opt/redis/conf/redis-6381.conf 
+[root@rzk bin]# ./redis-server /opt/redis/conf/redis-6382.conf 
+[root@rzk bin]# ./redis-server /opt/redis/conf/redis-6383.conf 
+[root@rzk bin]# ./redis-sentinel /opt/redis/conf/sentinel-26381.conf 
+[root@rzk bin]# ./redis-sentinel /opt/redis/conf/sentinel-26382.conf 
+[root@rzk bin]# ./redis-sentinel /opt/redis/conf/sentinel-26383.conf 
+
+
+```
