@@ -1,14 +1,17 @@
 package com.rzk.controller.toolapi.controller;
 
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.rzk.controller.toolapi.model.support.BaseResponse;
 import com.rzk.mapper.dao.WxAppParsingInfoMapper;
 import com.rzk.pojo.WxAppParsingInfo;
-import com.rzk.controller.toolapi.model.support.BaseResponse;
 import com.rzk.service.VideoService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.Calendar;
+import java.util.List;
+import javax.annotation.Resource;
+
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Calendar;
@@ -37,7 +40,10 @@ public class VideoController {
     public BaseResponse getVideoInfo(@RequestParam(value = "url") String url, @RequestParam(value = "openId") String openId) {
         return BaseResponse.ok(videoService.getVideoInfo(openId, url));
     }
-
+    @GetMapping(value = "getVideoInfos")
+    public void getVideoInfo() {
+        System.out.println("getVideoInfos");
+    }
     /***
      * 获取解析记录
      * @param openId
@@ -48,7 +54,9 @@ public class VideoController {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE) - 30);
         QueryWrapper<WxAppParsingInfo> queryWrapper = new QueryWrapper();
-        queryWrapper.lambda().eq(WxAppParsingInfo::getUserOpenId, openId).gt(WxAppParsingInfo::getCreateTime, calendar.getTime());
+       (queryWrapper.lambda().eq(WxAppParsingInfo::getUserOpenId, openId)).gt(WxAppParsingInfo::getCreateTime, calendar.getTime());
+
+
         List<WxAppParsingInfo> parsingInfoList = parsingInfoMapper.selectList(queryWrapper);
         return BaseResponse.ok(parsingInfoList);
     }

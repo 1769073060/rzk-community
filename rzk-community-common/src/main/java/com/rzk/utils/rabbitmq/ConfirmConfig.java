@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * 配置类 发布确认
  */
-@Configuration
+//@Configuration
 public class ConfirmConfig {
     //普通交换机
     public static final String CONFIRM_EXCHANGE_NAME = "confirm_exchange";

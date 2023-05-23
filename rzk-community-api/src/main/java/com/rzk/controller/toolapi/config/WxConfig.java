@@ -8,17 +8,17 @@ import org.springframework.stereotype.Component;
  * @date: 2021/6/15 11:05
  * @description:phone 17521111022
  */
-//@Component
+@Component
 public class WxConfig {
     public static String appId;
     public static String secret;
 
-    //@Value("${wx.appId}")
+    @Value("${wx.appid}")
     private void setAppId(String appId) {
         WxConfig.appId = appId;
     }
 
-    //@Value("${wx.secret}")
+    @Value("${wx.secret}")
     private void setSecret(String secret) {
         WxConfig.secret = secret;
     }

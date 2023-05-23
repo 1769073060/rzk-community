@@ -42,8 +42,7 @@ public class WxServerController {
     private RedisTemplate<String,Object> redisTemplate;
     @Resource
     private IWxService wxService;
-    @Resource
-    private RabbitTemplate rabbitTemplate;
+
 
     /**
      *
@@ -94,6 +93,7 @@ public class WxServerController {
             // 消息类型
             logger.info("controller======>{}"+respContent);
 
+            /**
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -109,6 +109,7 @@ public class WxServerController {
 
                 }
             }).start();
+             **/
             return respContent;
         } catch (Exception e) {
             e.printStackTrace();

@@ -10,11 +10,9 @@ import com.rzk.service.ITbTaoZheKouMessageService;
 import com.rzk.service.IWxService;
 import com.rzk.service.IWxUserService;
 import com.rzk.utils.BeanToXml;
-import com.rzk.utils.rabbitmq.ConfirmConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.connection.CorrelationData;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -40,8 +38,8 @@ public class WxServiceImpl implements IWxService {
     private ITbTaoZheKouMessageService iTbTaoZheKouMessageService;
     @Resource
     private IWxUserService iWxUserService;
-    @Resource
-    private RabbitTemplate rabbitTemplate;
+
+
     /**
      * 用于处理所有的事件和消息的回复
      * @param requestMap

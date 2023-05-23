@@ -11,7 +11,10 @@ import com.rzk.pojo.WxAppUser;
 import com.rzk.pojo.dto.VideoInfoDto;
 import com.rzk.service.VideoService;
 import com.rzk.service.WxAppUserService;
+import com.rzk.utils.HttpClient;
+import com.rzk.*;
 import com.rzk.utils.RestTemplateUtil;
+
 import com.rzk.utils.exception.Asserts;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -44,27 +47,39 @@ public class VideoServiceImpl implements VideoService {
     @Resource
     private WxAppParsingInfoMapper parsingInfoMapper;
 
+    public static void main(String[] args) {
+        String result = HttpClient.doGetRequest("https://api.iculture.cc/api/video/?url=" + "https://v.douyin.com/SVUwvUG/");
+        //转成json对象
+        JSONObject json = JSON.parseObject(result);
+        json.getString("code");
+
+        json.getString("msg");
+        json.getString("url");
+        json.getString("musicurl");
+    }
+
     @Override
     public VideoInfoDto getVideoInfo(String openid, String url) {
+        System.out.println("getVideoInfo===================");
+        System.out.println("openid==================="+openid);
+        System.out.println("url==================="+url);
         WxAppUser wxUser = wxAppUserService.getUserInfoByOpenId(openid);
         if (wxUser == null) {
             Asserts.wxInfoFail("未查到用户信息");
         } else if (wxUser.getVideoNumber() < 1) {
             Asserts.wxInfoFail("解析次数已用完");
         }
-        isContainsStrings(url);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("User-Agent", "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Mobile Safari/537.36");
-        httpHeaders.set("Referer", url);
+
+
+
+
+        //isContainsStrings(url);
+
         VideoInfoDto videoInfoDto;
         //抖音快手Java解析其余短视频平台Java版本暂时没时间写先用php
-        if (url.contains("douyin")) {
-            videoInfoDto = parsingDyVideoInfo(url, httpHeaders);
-        } else if (url.contains("kuaishou")) {
-            videoInfoDto = parsingKsuVideoInfo(url, httpHeaders);
-        } else {
-            videoInfoDto = phpParsingVideoInfo(url);
-        }
+
+        videoInfoDto = parsingDyVideoInfo(url);
+
         wxUser.setVideoNumber(wxUser.getVideoNumber() - 1);
         wxUser.setLastParsingTime(new Date());
         wxAppUserService.updateById(wxUser);
@@ -79,28 +94,23 @@ public class VideoServiceImpl implements VideoService {
         return videoInfoDto;
     }
 
-    @Override
-    public VideoInfoDto parsingDyVideoInfo(String url, HttpHeaders httpHeaders) {
-        //获取重定向后的地址
-        url = restTemplate.headForHeaders(url).getLocation().toString();
-        Matcher matcher = Pattern.compile("/share/video/([\\d]*)[/|?]").matcher(url);
-        if (!matcher.find())
-            Asserts.urlParsingFail("解析链接ID异常");
-        //获取链接ID
-        String id = matcher.group(1);
-        String dyWebApi = "https://www.iesdouyin.com/web/api/v2/aweme/iteminfo/?item_ids=" + id;
-        String content = restTemplateUtil.getForObject(dyWebApi, httpHeaders, String.class);
-        Asserts.urlInfoNotNull(content, "API请求异常");
-        JSONObject videoInfo = JSON.parseObject(content).getJSONArray("item_list").getJSONObject(0);
+    public VideoInfoDto parsingDyVideoInfo(String url) {
+        String result = HttpClient.doGetRequest("https://api.iculture.cc/api/video/?url=" + url);
+        //转成json对象
+        JSONObject json = JSON.parseObject(result);
+
+
+
         VideoInfoDto videoInfoDto = new VideoInfoDto();
-        videoInfoDto.setTime(videoInfo.getString("create_time"));
-        videoInfoDto.setCover(videoInfo.getJSONObject("video").getJSONObject("origin_cover").getJSONArray("url_list").getString(0));
-        videoInfoDto.setUrl(videoInfo.getJSONObject("video").getJSONObject("play_addr").getJSONArray("url_list").getString(0).replace("playwm", "play"));
-        videoInfoDto.setTitle(videoInfo.getString("desc"));
-        videoInfoDto.setAuthor(videoInfo.getJSONObject("author").getString("nickname"));
-        videoInfoDto.setAvatar(videoInfo.getJSONObject("author").getJSONObject("avatar_larger").getJSONArray("url_list").getString(0));
+        videoInfoDto.setCover(json.getString("cover"));
+        videoInfoDto.setUrl(json.getString("url"));
+        videoInfoDto.setTitle(json.getString("title"));
+        videoInfoDto.setAuthor(json.getString("author"));
+        videoInfoDto.setAvatar(json.getString("avatar"));
         return videoInfoDto;
     }
+
+
 
     @Override
     public VideoInfoDto parsingKsuVideoInfo(String url, HttpHeaders httpHeaders) {

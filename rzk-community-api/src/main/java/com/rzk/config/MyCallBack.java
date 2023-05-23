@@ -22,7 +22,7 @@ import javax.annotation.PostConstruct;
  *回调接口
  */
 @Slf4j
-@Component
+//@Component
 public class MyCallBack implements RabbitTemplate.ConfirmCallback,RabbitTemplate.ReturnCallback {
 
     @Autowired
@@ -31,7 +31,7 @@ public class MyCallBack implements RabbitTemplate.ConfirmCallback,RabbitTemplate
     @PostConstruct
     public void init(){
         //内部接口注入类中
-        rabbitTemplate.setConfirmCallback(this);
+        //rabbitTemplate.setConfirmCallback(this);
         //rabbitTemplate.setReturnsCallback(this);
     }
 

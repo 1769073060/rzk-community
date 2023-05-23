@@ -24,12 +24,12 @@ import java.util.Map;
  * @Version : 1.0.0
  */
 @Slf4j
-@Component
+//@Component
 public class Consumer {
     @Autowired
     private IWxService iWxService;
 
-    @RabbitListener(queues = ConfirmConfig.CONFIRM_QUEUE_NAME)
+    //@RabbitListener(queues = ConfirmConfig.CONFIRM_QUEUE_NAME)
     public void receiveConfirMessage(Message message){
         String msg = new String(message.getBody());
         log.info("接收队列confirm.queue消息:{}",msg);

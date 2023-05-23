@@ -1,8 +1,10 @@
 package com.rzk.controller.toolapi.core;
 
-import com.rzk.controller.toolapi.exception.UrlParsingException;
-import com.rzk.controller.toolapi.exception.WxInfoException;
+
+
 import com.rzk.controller.toolapi.model.support.BaseResponse;
+import com.rzk.utils.exception.UrlParsingException;
+import com.rzk.utils.exception.WxInfoException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -22,7 +24,7 @@ import java.rmi.UnexpectedException;
  * @date: 2021/6/9 10:48
  * @description:phone 17521111022
  */
-@RestControllerAdvice
+//@RestControllerAdvice
 @Slf4j
 public class ControllerException {
 

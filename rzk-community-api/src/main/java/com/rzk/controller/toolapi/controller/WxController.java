@@ -1,8 +1,9 @@
 package com.rzk.controller.toolapi.controller;
 
-import com.rzk.pojo.WxAppUser;
 import com.rzk.controller.toolapi.model.support.BaseResponse;
+import com.rzk.pojo.WxAppUser;
 import com.rzk.service.WxAppUserService;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,11 +22,11 @@ import java.util.Date;
 public class WxController {
 
     @Resource
-    private WxAppUserService wxAppUserService;
+    private WxAppUserService wxUserService;
 
     @PostMapping(value = "auth")
     public BaseResponse<String> wxAuth(@RequestParam(value = "js_code") String code) {
-        String openId = wxAppUserService.getOpenId(code);
+        String openId = wxUserService.getOpenId(code);
         return BaseResponse.ok("openId获取成功", openId);
     }
 
@@ -36,7 +37,7 @@ public class WxController {
      */
     @PostMapping(value = "login")
     public BaseResponse<WxAppUser> login(@RequestParam(value = "openId") String openId, String name) {
-        WxAppUser wxUser = wxAppUserService.getUserInfoByOpenId(openId);
+        WxAppUser wxUser = wxUserService.getUserInfoByOpenId(openId);
         if (wxUser == null) {
             wxUser = new WxAppUser();
             wxUser.setName(name);
@@ -44,7 +45,7 @@ public class WxController {
             wxUser.setVideoNumber(999);
             wxUser.setSignInSum(1);
             wxUser.setCreateTime(new Date());
-            wxAppUserService.insert(wxUser);
+            wxUserService.insert(wxUser);
         }
         return BaseResponse.ok(wxUser);
     }
@@ -56,7 +57,7 @@ public class WxController {
      */
     @PostMapping(value = "signIn")
     public BaseResponse<WxAppUser> sign(@RequestParam(value = "openId") String openId) {
-        WxAppUser wxUser = wxAppUserService.singIn(openId);
+        WxAppUser wxUser = wxUserService.singIn(openId);
         return BaseResponse.ok(wxUser);
     }
 

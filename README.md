@@ -81,5 +81,15 @@ nohup java -Xms800m -Xmx800m -XX:PermSize=256m -XX:MaxPermSize=512m -XX:MaxNewSi
 [root@rzk bin]# ./redis-sentinel /opt/redis/conf/sentinel-26382.conf 
 [root@rzk bin]# ./redis-sentinel /opt/redis/conf/sentinel-26383.conf 
 
-
+./redis-server /opt/redis/conf/redis-6381.conf 
+./redis-server /opt/redis/conf/redis-6382.conf 
+./redis-server /opt/redis/conf/redis-6383.conf 
+./redis-sentinel /opt/redis/conf/sentinel-26381.conf 
+./redis-sentinel /opt/redis/conf/sentinel-26382.conf 
+./redis-sentinel /opt/redis/conf/sentinel-26383.conf 
 ```
+
+小程序涉及到需要添加https操作,发布需要解放这一代码,公众号不需要用到,需要注释
+
+
+# 此项目包括小程序
