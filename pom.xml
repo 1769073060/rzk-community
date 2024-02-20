@@ -58,6 +58,7 @@
         <commons-lang.version>2.6</commons-lang.version>
         <ip2region.version>2.6.5</ip2region.version>
         <jackson-dataformat>2.10.2</jackson-dataformat>
+        <jcraft.version>0.1.54</jcraft.version>
     </properties>
 
     <dependencies>
@@ -378,6 +379,13 @@
             <artifactId>jsoup</artifactId>
             <version>1.14.2</version>
         </dependency>
+        <!--sftp文件上传-->
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>${jcraft.version}</version>
+        </dependency>
+
     </dependencies>
 
 

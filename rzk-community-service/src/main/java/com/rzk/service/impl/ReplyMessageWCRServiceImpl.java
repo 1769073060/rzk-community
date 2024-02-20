@@ -4,12 +4,12 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.rzk.pojo.consts.WxConsts;
+import com.rzk.pojo.consts.WxResourcesConsts;
 import com.rzk.pojo.wxserver.*;
 import com.rzk.service.IReplyMessageService;
+import com.rzk.service.IReplyMessageWCRService;
 import com.rzk.service.IWxResourceService;
-import com.rzk.pojo.consts.WxResourcesConsts;
 import com.rzk.service.IWxUserService;
-import com.rzk.utils.rabbitmq.ConfirmConfig;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -38,9 +38,9 @@ import java.util.*;
  */
 @DS("slave")
 @Service
-public class ReplyMessageServiceImpl implements IReplyMessageService {
+public class ReplyMessageWCRServiceImpl implements IReplyMessageWCRService {
 
-    private Logger logger = LoggerFactory.getLogger(ReplyMessageServiceImpl.class);
+    private Logger logger = LoggerFactory.getLogger(ReplyMessageWCRServiceImpl.class);
     @Resource
     private IWxResourceService iWxResourceService;
     @Resource
@@ -48,26 +48,9 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
     private final static String notResourceContent = "该资源不存在,或已失效,可联系我补上该资源!";
 
 
-    public BaseMessage replyTextBlackFLagMessage(Map<String, String> requestMap) {
-        StringBuffer stringBuffer = new StringBuffer();
-        TextMessage textMessage = null;
-        WxResource wxResource = null;
-        QueryWrapper<WxResource> queryWrapper = new QueryWrapper();
 
-        wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "解除限制"));
 
-        if (wxResource != null) {
-            stringBuffer.append("由于您之前取消关注过本公众号，所以无法提供本服务！解除限制，");
-            stringBuffer.append("<a href=\"" + wxResource.getContent() + "\">点击解封</a>");
-            textMessage = new TextMessage(requestMap, stringBuffer.toString());
-        } else {
-            textMessage = new TextMessage(requestMap, notResourceContent);
-        }
-        return textMessage;
-
-    }
-
-    public BaseMessage replyTextMessage(Map<String, String> requestMap) {
+    public BaseMessage replyTextMessageWeChatRobot(Map<String, String> requestMap) {
         QueryWrapper<WxResource> queryWrapper = new QueryWrapper();
         QueryWrapper<WxResource> queryWrapperDirectoryName = new QueryWrapper();
         QueryWrapper<WxResource> queryWrapperRes = new QueryWrapper();
@@ -89,12 +72,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
         String msg = requestMap.get("Content");
 
         if (msg != null && !"".equals(msg)) {
-            if (msg.equals("图文")) {
-                List<Articles> articles = new ArrayList<>();
-                articles.add(new Articles(new Item("标题", "介绍", "https://images.cnblogs.com/cnblogs_com/rzkwz/1756659/t_20050309390594F9FC1EB9F4465A71DEFDC6BF42A866.jpg?a=1635065775599", "http://www.ruizhukai.com")));
-                NewsInfoMessage newsInfoMessage = new NewsInfoMessage(requestMap, articles);
-                return newsInfoMessage;
-            }
+
             if (msg.equals("录屏工具") || msg.equals("录屏")) {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "录屏工具提示语"));
                 textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
@@ -128,7 +106,6 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
 
-            ////////////////////////////////////////////////////////////以上是作为提示用户输入
             if (msg.equals("win10家庭版激活码")) {
                 wxResourceLzy = iWxResourceService.getOne(queryWrapper.eq("file_name", "win10家庭版激活码"));
 
@@ -166,7 +143,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
 
             }
             if (msg.equals("你好") || msg.equals("好") || msg.equals("你好啊") || msg.equals("你好呀")) {
-                stringBuffer.append("好好好，我很好");
+                stringBuffer.append("好好好，都很好呢");
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
             }
             if (msg.equals("小程序") || msg.equals("壁纸")) {
@@ -182,17 +159,6 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 stringBuffer.append("解压密码：" + wxResource.getUrl() );
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
             }
-            if (msg.equals("zlibrary网站") || msg.equals("ZLibrary网站") || msg.equals("ZLibrary") || msg.equals("zlibrary")) {
-                wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "zlibrary网站"));
-                textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
-            }
-            if (msg.contains("进群") || msg.contains("群")){
-                WxResource wxResource = iWxResourceService.getOne(wxQueryWrapper.eq("file_name", "微信群"));
-
-                stringBuffer.append("已关闭！如需进群请加右下角菜单微信");
-
-                textMessage = new TextMessage(requestMap, stringBuffer.toString());
-            }
             if (msg.equals("webstrom") || msg.equals("webstorm")) {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "webstorm开发工具提示语"));
                 textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
@@ -203,10 +169,10 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
             if (msg.equals("优酷") || msg.equals("优酷会员") || msg.equals("优酷vip会员")) {
                 WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "优酷一日vip会员"));
 
-                stringBuffer.append("<a href=\"" +
-                        wxResource.getUrl() +
-                        "\">点击领取</a>");
-                stringBuffer.append("优酷一日vip会员（活动截止时间：2023年12月31日，之前参与过的无法领取）");
+                //stringBuffer.append("<a href=\"" +
+                       // wxResource.getUrl() +
+                      //  "\">点击领取</a>");
+                stringBuffer.append("优酷一日vip会员（活动已过期）");
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
             }
 
@@ -1003,9 +969,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                     stringBuffer.append(wxResourceAly.getUrl() + "\n");
                     stringBuffer.append("提取码:");
                     stringBuffer.append(wxResourceAly.getFetchCode() + "\n" + "\n");
-                    stringBuffer.append(wxResourceBdy.getArticleAddresses() != null || wxResourceAly.getArticleAddresses() != null ? "<a href=\"" +
-                            wxResourceBdy.getArticleAddresses() +
-                            "\">使用教程</a>"
+                    stringBuffer.append(wxResourceBdy.getArticleAddresses() != null || wxResourceAly.getArticleAddresses() != null ? "使用教程" +
+                            wxResourceBdy.getArticleAddresses()
                             :
                             "");
                     textMessage = new TextMessage(requestMap, stringBuffer.toString());
@@ -2280,17 +2245,19 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 }
 
             }
-            if (msg.equals("红包封页") || msg.equals("红包封面") || msg.equals("封面") || msg.equals("封页")) {
+            if (msg.equals("红包封页") || msg.equals("红包封面") || msg.equals("封面红包") || msg.equals("封面") || msg.equals("封页")) {
                 wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "fm"));
-                textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
-            }
-            if (msg.equals("红包封页1") || msg.equals("红包封面1")  || msg.equals("红包封面下一页")  || msg.equals("红包封页下一页") || msg.equals("封面1") || msg.equals("封页1")) {
-                wxResourceBdy = iWxResourceService.getOne(queryWrapper.eq("file_name", "fm1"));
                 textMessage = textMessage(wxResourceBdy, stringBuffer, textMessage, requestMap);
             }
             if (msg.equals("fm")) {
                 stringBuffer.append("最新封面：点击☞#红包封面 领取！");
                 stringBuffer.append("\n");
+                stringBuffer.append(
+                        "「龙年红包封面」领取：<a href=\"" +
+                                "https://ssl.gongyi.qq.com/m/wxact/2023_goodthings.html#/index" +
+                                "\"> ☞点击领取</a>\n");
+
+                /**
                 stringBuffer.append(
                         "东风1：<a href=\"" +
                                 "https://shortcn.com/shp1g" +
@@ -2354,13 +2321,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                         "「小红象」封面：<a href=\"" +
                                 "https://hz.qyfw168.cn/miniapp/luck/hongbao/hebei.html" +
                                 "\"> ☞点击领取</a>\n");
-                stringBuffer.append("\n");
+                **/
 
-                stringBuffer.append("金典四款： #小程序://金典SATINE/z0i0m6HfEeZuXRE\n");
-                stringBuffer.append("\n");
-                stringBuffer.append("「情侣」封面（每日10/13:14/17:20发放）：#小程序://DR求婚钻戒/X6vftr605cHFwRd\n");
-                stringBuffer.append("\n");
-                stringBuffer.append("「PUMA / 巴宝莉 / 尤妮佳 / QQ」封面：点击#微信红包封面，在视频中抽取。\n");
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
                 logger.info("返回回复文本消息" + textMessage);
             }
@@ -2413,76 +2375,57 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 if (count == 1) {
                     WxResource wxResourceMsg = iWxResourceService.getOne(queryWrapperDirectoryName.eq("directory_name", msg));
                     if (wxResourceMsg != null) {
-                        textMessage = textMessageBdy(wxResourceMsg, stringBuffer, textMessage, requestMap);
+                        textMessage = textMessageBdyWeChatRobot(wxResourceMsg, stringBuffer, textMessage, requestMap);
                         StringBuffer sb = new StringBuffer();
                         sb.append("\n");
-                        sb.append("\n");
-                        //sb.append("本号取关后，即使再次关注也将无法提供服务，切记切记");
-                        //sb.append("\n");
-                        //sb.append("\n");
-
-
-                        sb.append("如有问题可加群咨询\n");
-                        sb.append("☟☟☟☟☟☟☟☟☟☟☟☟");
-                        sb.append("\n");
-                        WxResource wxResource = iWxResourceService.getOne(wxQueryWrapper.eq("file_name", "微信群"));
-                        sb.append("<a href=\"" +
-                                wxResource.getUrl() +
-                                "\">链接</a>");
-
 
 
                         WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
                         WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
-
-                        sb.append("\n");
-                        sb.append("<a href=\"https://kdocs.cn/l/cnMimbh0f5M5\">《一百T资源共享更新文档》</a>");
                         if (wxResourceZygx != null) {
-
+                            sb.append("\n");
+                            sb.append("\n");
                             sb.append("\n");
                             sb.append("\n");
                             sb.append("\n☟☟☟☟☟\n");
                             sb.append(
                                     wxResourceZygx != null
-                                            ? "<a href=\"" +
-                                            wxResourceZygx.getUrl() +
-                                            "\">整理合集一（每天更新）</a>"
+                                            ? "整理合集一（每天更新）" +
+                                            wxResourceZygx.getUrl()
                                             :
                                             "");
                             sb.append("\n");
                             if (wxResourceZygxuc != null) {
-
-
                                 sb.append(
                                         wxResourceZygxuc != null
-                                                ? "<a href=\"" +
-                                                wxResourceZygxuc.getUrl() +
-                                                "\">整理合集二（每天更新）</a>"
+                                                ? "整理合集二（每天更新）" +
+                                                wxResourceZygxuc.getUrl()
                                                 :
                                                 "");
+
                             }
                             sb.append("\n☝☝☝☝\n");
                         }
                         /**
-                        WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
-                        sb.append("\n");
-                        sb.append("\n");
-                        sb.append("\n");
+                         WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
+                         sb.append("\n");
+                         sb.append("\n");
+                         sb.append("\n");
 
-                        if (wxResourceZygx != null) {
+                         if (wxResourceZygx != null) {
 
-                            sb.append("\n☟☟☟☟\n");
-                            sb.append(
-                                    wxResource != null
-                                            ? "<a href=\"" +
-                                            wxResourceZygx.getUrl() +
-                                            "\">福利专区</a>"
-                                            :
-                                            "");
-                            sb.append("\n☝☝☝☝\n");
+                         sb.append("\n☟☟☟☟\n");
+                         sb.append(
+                         wxResource != null
+                         ? "<a href=\"" +
+                         wxResourceZygx.getUrl() +
+                         "\">福利专区</a>"
+                         :
+                         "");
+                         sb.append("\n☝☝☝☝\n");
 
-                            sb.append("这是我这几年整理全网资源文档，需要的可以保存下载");
-                        }
+                         sb.append("这是我这几年整理全网资源文档，需要的可以保存下载");
+                         }
                          **/
                         textMessage.setContent(textMessage.getContent() + sb.toString());
                         return textMessage;
@@ -2510,9 +2453,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                     }
                     for (WxResource wxResource : wxResourceList) {
                         if (!"".equals(wxResource.getArticleAddresses())){
-                            stringBuffer2.append(!"".equals(wxResource.getArticleAddresses())  ? "<a href=\"" +
-                                    wxResource.getArticleAddresses() +
-                                    "\">使用教程</a>"
+                            stringBuffer2.append(!"".equals(wxResource.getArticleAddresses())  ? "使用教程" +
+                                    wxResource.getArticleAddresses()
                                     :
                                     "");
                             break;
@@ -2522,72 +2464,59 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
 
                     textMessage = new TextMessage(requestMap, stringBuffer2.toString());
                     sb.append("\n");
+
+
+
                     sb.append("\n");
-                    //sb.append("本号取关后，即使再次关注也将无法提供服务，切记切记");
-                    //sb.append("\n");
-                    //sb.append("\n");
-
-
-                    sb.append("如有问题可加群咨询\n");
-                    sb.append("☟☟☟☟☟☟☟☟☟☟☟☟");
                     sb.append("\n");
-                    WxResource wxResource = iWxResourceService.getOne(wxQueryWrapper.eq("file_name", "微信群"));
-                    sb.append("<a href=\"" +
-                            wxResource.getUrl() +
-                            "\">链接</a>");
-
-
+                    sb.append("\n");
+                    sb.append("\n");
+                    sb.append("\n☟☟☟☟☟\n");
                     WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
                     WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
-
-                    sb.append("\n");
-                    sb.append("<a href=\"https://kdocs.cn/l/cnMimbh0f5M5\">《一百T资源共享更新文档》</a>");
                     if (wxResourceZygx != null) {
-
+                        sb.append("\n");
+                        sb.append("\n");
                         sb.append("\n");
                         sb.append("\n");
                         sb.append("\n☟☟☟☟☟\n");
                         sb.append(
                                 wxResourceZygx != null
-                                        ? "<a href=\"" +
-                                        wxResourceZygx.getUrl() +
-                                        "\">整理合集一（每天更新）</a>"
+                                        ? "整理合集一（每天更新）" +
+                                        wxResourceZygx.getUrl()
                                         :
                                         "");
                         sb.append("\n");
                         if (wxResourceZygxuc != null) {
-
-
                             sb.append(
                                     wxResourceZygxuc != null
-                                            ? "<a href=\"" +
-                                            wxResourceZygxuc.getUrl() +
-                                            "\">整理合集二（每天更新）</a>"
+                                            ? "整理合集二（每天更新）" +
+                                            wxResourceZygxuc.getUrl()
                                             :
                                             "");
                         }
                         sb.append("\n☝☝☝☝\n");
                     }
                     /**
-                    sb.append("\n");
-                    sb.append("\n");
-                    sb.append("\n");
-                    WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
+                     sb.append("\n");
+                     sb.append("\n");
+                     sb.append("\n");
+                     WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
 
-                    if (wxResourceZygx != null) {
+                     if (wxResourceZygx != null) {
 
-                        sb.append("\n☟☟☟☟☟\n");
-                        sb.append(
-                                wxResource != null
-                                        ? "<a href=\"" +
-                                        wxResourceZygx.getUrl() +
-                                        "\">福利专区</a>"
-                                        :
-                                        "");
-                        sb.append("\n☝☝☝☝\n");
+                     sb.append("\n☟☟☟☟☟\n");
+                     sb.append(
+                     wxResource != null
+                     ? "<a href=\"" +
+                     wxResourceZygx.getUrl() +
+                     "\">福利专区</a>"
+                     :
+                     "");
+                     sb.append("\n☝☝☝☝\n");
 
-                        sb.append("这是我这几年整理全网资源文档，需要的可以保存下载");
-                    }
+                     sb.append("这是我这几年整理全网资源文档，需要的可以保存下载");
+                     }
                      **/
                     textMessage.setContent(textMessage.getContent() + sb.toString());
                     return textMessage;
@@ -2626,74 +2555,56 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
 
                     textMessage = new TextMessage(requestMap, stringBuffer2.toString());
                     sb.append("\n");
-                    sb.append("\n");
-                    //sb.append("本号取关后，即使再次关注也将无法提供服务，切记切记");
-                    //sb.append("\n");
-                    //sb.append("\n");
 
-                    sb.append("如有问题可加群咨询\n");
-                    sb.append("☟☟☟☟☟☟☟☟☟☟☟☟");
-                    sb.append("\n");
-                    WxResource wxResource = iWxResourceService.getOne(wxQueryWrapper.eq("file_name", "微信群"));
-                    sb.append("<a href=\"" +
-                            wxResource.getUrl() +
-                            "\">链接</a>");
 
                     WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
                     WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
-
-                    sb.append("\n");
-                    sb.append("<a href=\"https://kdocs.cn/l/cnMimbh0f5M5\">《一百T资源共享更新文档》</a>");
                     if (wxResourceZygx != null) {
-
-
-                        sb.append("\n");
-                        sb.append("\n");
-                        sb.append("\n☟☟☟☟☟\n");
-                        sb.append(
+                        stringBuffer.append("\n");
+                        stringBuffer.append("\n");
+                        stringBuffer.append("\n");
+                        stringBuffer.append("\n");
+                        stringBuffer.append("\n☟☟☟☟☟\n");
+                        stringBuffer.append(
                                 wxResourceZygx != null
-                                        ? "<a href=\"" +
-                                        wxResourceZygx.getUrl() +
-                                        "\">整理合集一（每天更新）</a>"
+                                        ? "整理合集一（每天更新）" +
+                                        wxResourceZygx.getUrl()
                                         :
                                         "");
                         stringBuffer.append("\n");
                         if (wxResourceZygxuc != null) {
-
-
-                            sb.append(
+                            stringBuffer.append(
                                     wxResourceZygxuc != null
-                                            ? "<a href=\"" +
-                                            wxResourceZygxuc.getUrl() +
-                                            "\">整理合集二（每天更新）</a>"
+                                            ? "整理合集二（每天更新）" +
+                                            wxResourceZygxuc.getUrl()
                                             :
                                             "");
                         }
-                        sb.append("\n☝☝☝☝\n");
+                        stringBuffer.append("\n☝☝☝☝\n");
                     }
 
                     /**
 
-                    sb.append("\n");
-                    sb.append("\n");
-                    sb.append("\n");
-                    WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
+                     sb.append("\n");
+                     sb.append("\n");
+                     sb.append("\n");
+                     WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
 
-                    if (wxResourceZygx != null) {
+                     if (wxResourceZygx != null) {
 
 
-                        sb.append("\n☟☟☟☟☟\n");
-                        sb.append(
-                                wxResource != null
-                                        ? "<a href=\"" +
-                                        wxResourceZygx.getUrl() +
-                                        "\">福利专区</a>"
-                                        :
-                                        "");
-                        sb.append("\n☝☝☝☝\n");
+                     sb.append("\n☟☟☟☟☟\n");
+                     sb.append(
+                     wxResource != null
+                     ? "<a href=\"" +
+                     wxResourceZygx.getUrl() +
+                     "\">福利专区</a>"
+                     :
+                     "");
+                     sb.append("\n☝☝☝☝\n");
 
-                        sb.append("这是我这几年整理全网资源文档，需要的可以保存下载");
-                    }
+                     sb.append("这是我这几年整理全网资源文档，需要的可以保存下载");
+                     }
                      **/
                     textMessage.setContent(textMessage.getContent() + sb.toString());
                     return textMessage;
@@ -2732,77 +2643,66 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
 
                     textMessage = new TextMessage(requestMap, stringBuffer2.toString());
                     sb.append("\n");
-                    sb.append("\n");
-                    //sb.append("本号取关后，即使再次关注也将无法提供服务，切记切记");
-                    //sb.append("\n");
-                    //sb.append("\n");
 
-                    sb.append("如有问题可加群咨询\n");
-                    sb.append("☟☟☟☟☟☟☟☟☟☟☟☟");
-                    sb.append("\n");
-                    WxResource wxResource = iWxResourceService.getOne(wxQueryWrapper.eq("file_name", "微信群"));
-                    sb.append("<a href=\"" +
-                            wxResource.getUrl() +
-                            "\">链接</a>");
-                    sb.append("\n");
 
-                    sb.append("<a href=\"https://kdocs.cn/l/cnMimbh0f5M5\">《一百T资源共享更新文档》</a>");
                     WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
                     WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
                     if (wxResourceZygx != null) {
-
-                        sb.append("\n");
-                        sb.append("\n");
-                        sb.append("\n☟☟☟☟☟\n");
-                        sb.append(
+                        stringBuffer.append("\n");
+                        stringBuffer.append("\n");
+                        stringBuffer.append("\n");
+                        stringBuffer.append("\n");
+                        stringBuffer.append("\n☟☟☟☟☟\n");
+                        stringBuffer.append(
                                 wxResourceZygx != null
-                                        ? "<a href=\"" +
-                                        wxResourceZygx.getUrl() +
-                                        "\">整理合集一（每天更新）</a>"
+                                        ? "整理合集一（每天更新）" +
+                                        wxResourceZygx.getUrl()
                                         :
                                         "");
                         stringBuffer.append("\n");
                         if (wxResourceZygxuc != null) {
-                            sb.append(
+                            stringBuffer.append(
                                     wxResourceZygxuc != null
-                                            ? "<a href=\"" +
-                                            wxResourceZygxuc.getUrl() +
-                                            "\">整理合集二（每天更新）</a>"
+                                            ? "整理合集二（每天更新）" +
+                                            wxResourceZygxuc.getUrl()
                                             :
                                             "");
                         }
-                        sb.append("\n☝☝☝☝\n");
+                        stringBuffer.append("\n☝☝☝☝\n");
                     }
                     /**
-                    sb.append("\n");
-                    sb.append("\n");
-                    sb.append("\n");
-                    WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
+                     sb.append("\n");
+                     sb.append("\n");
+                     sb.append("\n");
+                     WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
 
-                    if (wxResourceZygx != null) {
+                     if (wxResourceZygx != null) {
 
 
-                        sb.append("\n☟☟☟☟☟\n");
-                        sb.append(
-                                wxResource != null
-                                        ? "<a href=\"" +
-                                        wxResourceZygx.getUrl() +
-                                        "\">福利专区</a>"
-                                        :
-                                        "");
-                        sb.append("\n☝☝☝☝\n");
+                     sb.append("\n☟☟☟☟☟\n");
+                     sb.append(
+                     wxResource != null
+                     ? "<a href=\"" +
+                     wxResourceZygx.getUrl() +
+                     "\">福利专区</a>"
+                     :
+                     "");
+                     sb.append("\n☝☝☝☝\n");
 
-                        sb.append("这是我这几年整理全网资源文档，需要的可以保存下载");
-                    }
+                     sb.append("这是我这几年整理全网资源文档，需要的可以保存下载");
+                     }
                      **/
                     textMessage.setContent(textMessage.getContent() + sb.toString());
                     return textMessage;
                 }
                 else {
+                    int counter = 0; // 添加计数器
+
 
                     QueryWrapper<WxResource> queryLikeWrapper = new QueryWrapper<>();
                     List<WxResource> wxResourceList = iWxResourceService.list(queryLikeWrapper.like("directory_name", msg));// column_name 替换为你的数据库字段名
                     System.out.println("返回回复文本消息===============" + wxResourceList.size());
+
                     Set<String> uniqueDirectoryNames = new HashSet<>();
 
                     for (WxResource wxResource : wxResourceList) {
@@ -2825,190 +2725,158 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                         System.out.println("返回回复文本消息" + stringBuffer2);
                         logger.info("返回回复文本消息" + stringBuffer2);
                         return new TextMessage(requestMap, stringBuffer2.toString());
-                    } else {
-                        WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "资源大全"));
+                    }  else {
+                        counter++; // 增加计数器
+                        System.out.println("counter++" + counter++);
 
-                        stringBuffer.append("<a href=\"https://kdocs.cn/l/cnMimbh0f5M5\">《一百T资源共享更新文档》</a>");
-                        stringBuffer.append("\n");
+                        if (counter % 5 == 0) { // 如果计数器达到5的倍数，执行else块中的代码
+                            WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "资源大全"));
 
-                        stringBuffer.append("找不到该资源，关键字输入未匹配到或还未添加该资源");
-                        stringBuffer.append(",可参考：");
-                        stringBuffer.append(
-                                wxResource != null
-                                        ? "<a href=\"" +
-                                        wxResource.getUrl() +
-                                        "\">资源目录</a>"
-                                        :
-                                        "<a href=\"" +
-                                                "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247485636&idx=1&sn=23bd2fbca8589eed8f1013c984982bcf&chksm=c334f113f443780524df240e82c9c4c08cbbe7af95b3f4afb9d236339bc9271d2b51e666e27b#rd" +
-                                                "\">资源目录</a>");
-                        WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
-                        WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
-                        if (wxResourceZygx != null) {
+                            stringBuffer.append("找不到该资源，关键字输入未匹配到或还未添加该资源");
 
-                            stringBuffer.append("\n");
-                            stringBuffer.append("\n");
-                            stringBuffer.append("\n☟☟☟☟☟\n");
-                            stringBuffer.append(
-                                    wxResourceZygx != null
-                                            ? "<a href=\"" +
-                                            wxResourceZygx.getUrl() +
-                                            "\">整理合集一（每天更新）</a>"
-                                            :
-                                            "");
-                            stringBuffer.append("\n");
-                            if (wxResourceZygxuc != null) {
+                            WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
+                            WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
+
+
+                            if (wxResourceZygx != null) {
+
+                                stringBuffer.append("\n");
+                                stringBuffer.append("\n☟☟☟☟\n");
                                 stringBuffer.append(
-                                        wxResourceZygxuc != null
-                                                ? "<a href=\"" +
-                                                wxResourceZygxuc.getUrl() +
-                                                "\">整理合集二（每天更新）</a>"
+                                        wxResourceZygx != null
+                                                ? "整理合集一（每天更新）" +
+                                                wxResourceZygx.getUrl()
                                                 :
                                                 "");
+                                stringBuffer.append("\n");
+                                if (wxResourceZygxuc != null) {
+                                    stringBuffer.append(
+                                            wxResourceZygxuc != null
+                                                    ? "整理合集二（每天更新）" +
+                                                    wxResourceZygxuc.getUrl()
+                                                    :
+                                                    "");
+                                }
+                                stringBuffer.append("\n☝☝☝☝\n");
                             }
-                            stringBuffer.append("\n☝☝☝☝\n");
+                            /**
+                             stringBuffer.append("\n");
+                             stringBuffer.append("\n");
+                             stringBuffer.append("\n");
+                             WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
+
+                             if (wxResourceZygx != null) {
+
+                             stringBuffer.append("\n☟☟☟☟☟\n");
+                             stringBuffer.append(
+                             wxResource != null
+                             ? "<a href=\"" +
+                             wxResourceZygx.getUrl() +
+                             "\">福利专区</a>"
+                             :
+                             "");
+                             stringBuffer.append("\n☝☝☝☝\n");
+
+                             stringBuffer.append("这是我这几年整理全网资源文档，需要的可以保存下载");
+                             }
+                             **/
+                            return new TextMessage(requestMap, stringBuffer.toString());
                         }
-                        /**
-                         stringBuffer.append("\n");
-                         stringBuffer.append("\n");
-                         stringBuffer.append("\n");
-                         WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
-
-                         if (wxResourceZygx != null) {
-
-                         stringBuffer.append("\n☟☟☟☟☟\n");
-                         stringBuffer.append(
-                         wxResource != null
-                         ? "<a href=\"" +
-                         wxResourceZygx.getUrl() +
-                         "\">福利专区</a>"
-                         :
-                         "");
-                         stringBuffer.append("\n☝☝☝☝\n");
-
-                         stringBuffer.append("这是我这几年整理全网资源文档，需要的可以保存下载");
-                         }
-                         **/
+                        return new TextMessage(requestMap, "找不到该资源");
                     }
 
-
-
-                    return new TextMessage(requestMap, stringBuffer.toString());
                 }
             }
 
         } else {
-            WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "资源大全"));
-            stringBuffer.append("<a href=\"https://kdocs.cn/l/cnMimbh0f5M5\">《一百T资源共享更新文档》</a>");
-            stringBuffer.append("\n");
-            stringBuffer.append("找不到该资源，关键字输入未匹配到或还未添加该资源");
-            stringBuffer.append(",可参考：");
+            QueryWrapper<WxResource> queryLikeWrapper = new QueryWrapper<>();
+            List<WxResource> wxResourceList = iWxResourceService.list(queryLikeWrapper.like("directory_name", msg));// column_name 替换为你的数据库字段名
 
-            stringBuffer.append(
-                    wxResource != null
-                            ? "<a href=\"" +
-                            wxResource.getUrl() +
-                            "\">资源目录</a>"
-                            :
-                            "<a href=\"" +
-                                    "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247485636&idx=1&sn=23bd2fbca8589eed8f1013c984982bcf&chksm=c334f113f443780524df240e82c9c4c08cbbe7af95b3f4afb9d236339bc9271d2b51e666e27b#rd" +
-                                    "\">资源目录</a>");
+            if (!wxResourceList.isEmpty()) {
+                // 查询结果为空
+                StringBuffer sb = new StringBuffer();
+                int i = 0;
+                StringBuffer stringBuffer2 = new StringBuffer();
+                StringBuffer stringBufferF = new StringBuffer();
+                stringBufferF.append("已匹配到相关资源：\n");
+                stringBufferF.append("☟☟☟☟");
+                for (WxResource wxResource : wxResourceList) {
+                    StringBuffer stringBuffer1 = new StringBuffer();
+                    String content = wxResource.getDirectoryName().toString();
 
-            WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
-            WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
-            if (wxResourceZygx != null) {
+                    stringBufferF.append(content + "\n");
+                    stringBuffer2.append(stringBufferF);
+                    i++;
 
-                stringBuffer.append("\n");
-                stringBuffer.append("\n");
-                stringBuffer.append("\n☟☟☟☟☟\n");
-                stringBuffer.append(
-                        wxResourceZygx != null
-                                ? "<a href=\"" +
-                                wxResourceZygx.getUrl() +
-                                "\">整理合集一（每天更新）</a>"
-                                :
-                                "");
-                stringBuffer.append("\n");
-                if (wxResourceZygxuc != null) {
-                    stringBuffer.append(
-                            wxResourceZygxuc != null
-                                    ? "<a href=\"" +
-                                    wxResourceZygxuc.getUrl() +
-                                    "\">整理合集二（每天更新）</a>"
-                                    :
-                                    "");
                 }
-                stringBuffer.append("\n☝☝☝☝\n");
-            }
-            /**
-            stringBuffer.append("\n");
-            stringBuffer.append("\n");
-            stringBuffer.append("\n");
-            WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
+                stringBufferF.append("☝☝☝☝");
 
-            if (wxResourceZygx != null) {
+                stringBuffer2.append("\n可回复以上具体资源获取");
+                textMessage = new TextMessage(requestMap, stringBuffer2.toString());
+                logger.info("返回回复文本消息" + textMessage);
+            } else {
+                WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "资源大全"));
 
-                stringBuffer.append("\n☟☟☟☟☟\n");
+                stringBuffer.append("找不到该资源，关键字输入未匹配到或还未添加该资源");
+                stringBuffer.append(",可参考：");
+
                 stringBuffer.append(
                         wxResource != null
                                 ? "<a href=\"" +
-                                wxResourceZygx.getUrl() +
-                                "\">福利专区</a>"
+                                wxResource.getUrl() +
+                                "\">资源目录</a>"
                                 :
-                                "");
-                stringBuffer.append("\n☝☝☝☝\n");
+                                "<a href=\"" +
+                                        "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247485636&idx=1&sn=23bd2fbca8589eed8f1013c984982bcf&chksm=c334f113f443780524df240e82c9c4c08cbbe7af95b3f4afb9d236339bc9271d2b51e666e27b#rd" +
+                                        "\">资源目录</a>");
 
-                stringBuffer.append("这是我这几年整理全网资源文档，需要的可以保存下载");
+                WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
+                WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
+
+
+                if (wxResourceZygx != null) {
+
+                    stringBuffer.append("\n");
+                    stringBuffer.append("\n");
+                    stringBuffer.append("\n");
+                    stringBuffer.append("\n");
+                    stringBuffer.append("\n☟☟☟☟☟\n");
+                    stringBuffer.append(
+                            wxResourceZygx != null
+                                    ? "整理合集一（每天更新）" +
+                                    wxResourceZygx.getUrl()
+                                    :
+                                    "");
+                    stringBuffer.append("\n");
+                    if (wxResourceZygxuc != null) {
+
+
+                        stringBuffer.append(
+                                wxResourceZygxuc != null
+                                        ? "整理合集二（每天更新）" +
+                                        wxResourceZygxuc.getUrl()
+                                        :
+                                        "");
+                    }
+                    stringBuffer.append("\n☝☝☝☝\n");
+                }
+
+
+                textMessage = new TextMessage(requestMap, stringBuffer.toString());
+                logger.info("返回回复文本消息" + textMessage);
             }
-             **/
-            textMessage = new TextMessage(requestMap, stringBuffer.toString());
-            logger.info("返回回复文本消息" + textMessage);
+
+
 
         }
 
         StringBuffer sb = new StringBuffer();
         sb.append("\n");
-        sb.append("\n");
-        //sb.append("本号取关后，即使再次关注也将无法提供服务，切记切记");
-        //sb.append("\n");
-        //sb.append("\n");
 
-        sb.append("如有问题可扫描以下二维码加群咨询\n");
-        sb.append("☟☟☟☟☟☟☟☟☟☟☟☟");
-        sb.append("\n");
-
-        WxResource wxResource = iWxResourceService.getOne(wxQueryWrapper.eq("file_name", "微信群"));
-
-        sb.append("<a href=\"" +
-                wxResource.getUrl() +
-                "\">链接</a>");
-        /**
         WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
-
-        sb.append("\n");
-        sb.append("\n");
-        sb.append("\n");
-
-
-        if (wxResourceZygx != null) {
-            sb.append("\n☟☟☟☟☟\n");
-            sb.append(
-                    wxResource != null
-                            ? "<a href=\"" +
-                            wxResourceZygx.getUrl() +
-                            "\">福利专区</a>"
-                            :
-                            "");
-            sb.append("\n☝☝☝☝\n");
-            sb.append("这是我这几年整理全网资源文档，需要的可以保存下载")
-        }
-         **/
-
         textMessage.setContent(textMessage.getContent() + sb.toString());
         return textMessage;
     }
-
-
 
     public String getVideoInfo() {
         com.alibaba.fastjson.JSONObject basicInfo = null;
@@ -3083,262 +2951,6 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
         return basicInfo.toString();
     }
 
-    public BaseMessage replyEventMessage(Map<String, String> requestMap) {
-        logger.info("进入用户事件{}:");
-        TextMessage textMessage = new TextMessage();
-        StringBuffer stringBuffer = new StringBuffer();
-        StringBuffer urlBuffer = new StringBuffer();
-        StringBuffer zygxBuffer = new StringBuffer();
-
-        // 事件类型
-        String eventType = requestMap.get(WxConsts.REQ_MESSAGE_TYPE_EVENT);
-        logger.info("事件类型{}:" + eventType);
-
-        // 关注
-        if (eventType.equals(WxConsts.EVENT_TYPE_SUBSCRIBE)) {
-            logger.info("进入关注{}:");
-            QueryWrapper<WxUser> queryWxUser = new QueryWrapper<WxUser>();
-            QueryWrapper<WxResource> zygxQueryWrapper = new QueryWrapper<WxResource>();
-            QueryWrapper<WxResource> uczygxQueryWrapper = new QueryWrapper<WxResource>();
-
-            WxUser from_user_name = iWxUserService.getOne(queryWxUser.eq("from_user_name", requestMap.get(WxConsts.FromUserName)));
-
-            if (from_user_name != null) {
-
-                QueryWrapper<WxResource> queryWrapper = new QueryWrapper<WxResource>();
-                WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "资源大全"));
-                if (wxResource != null) {
-                    urlBuffer.append(wxResource.getUrl());
-                }
-                stringBuffer.append("感谢关注！");
-                stringBuffer.append("新来的小伙伴");
-                stringBuffer.append("不定时推送免费流量领取和分享免费工具的使用,");
-                stringBuffer.append("这是资源大全(持续更新中...):");
-                stringBuffer.append(
-                        wxResource != null
-                                ? "<a href=\"" +
-                                wxResource.getUrl() +
-                                "\">资源目录</a>"
-                                :
-                                "<a href=\"" +
-                                        "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247485636&idx=1&sn=23bd2fbca8589eed8f1013c984982bcf&chksm=c334f113f443780524df240e82c9c4c08cbbe7af95b3f4afb9d236339bc9271d2b51e666e27b#rd" +
-                                        "\">资源目录</a>");
-                logger.info("进入关注{}:" + stringBuffer.toString());
-                stringBuffer.append("快捷回复方式：\n" +
-                        "比如发送：壁纸，Adobe，" +
-                        "office，录屏，重装系统(待更新系列)，小说，XMind(在更新系列)，\n" +
-                        "win10激活工具(待更新系列)，Win11(待更新系列)，分流抢票神器(待更新系列)，" +
-                        "等等......");
-                stringBuffer.append("\n");
-                stringBuffer.append("<a data-miniprogram-appid=\"wx91abf242a5346a3c\" data-miniprogram-path=\"pages/gallery/gallery.html\" href=\"备用网址\" data-miniprogram-type=\"text\">精美壁纸</a>\n");
-
-
-                WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
-                WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
-                stringBuffer.append("\n");
-                stringBuffer.append("<a href=\"https://kdocs.cn/l/cnMimbh0f5M5\">《一百T资源共享更新文档》</a>");
-
-                if (wxResourceZygx != null) {
-
-
-                    stringBuffer.append("\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("\n☟☟☟☟☟\n");
-                    stringBuffer.append(
-                            wxResourceZygx != null
-                                    ? "<a href=\"" +
-                                    wxResourceZygx.getUrl() +
-                                    "\">整理合集一（每天更新）</a>"
-                                    :
-                                    "");
-                    stringBuffer.append("\n");
-                    if (wxResourceZygxuc != null) {
-
-
-                        stringBuffer.append(
-                                wxResourceZygxuc != null
-                                        ? "<a href=\"" +
-                                        wxResourceZygxuc.getUrl() +
-                                        "\">整理合集二（每天更新）</a>"
-                                        :
-                                        "");
-                    }
-                    stringBuffer.append("\n☝☝☝☝\n");
-                }
-                /**
-                stringBuffer.append("\n");
-                stringBuffer.append("\n");
-                stringBuffer.append("\n");
-                stringBuffer.append("\n");
-                WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
-                if (wxResourceZygx != null) {
-                    zygxBuffer.append(wxResourceZygx.getUrl());
-                }
-                stringBuffer.append("\n☟☟☟☟☟\n");
-                stringBuffer.append(
-                        wxResource != null
-                                ? "<a href=\"" +
-                                wxResourceZygx.getUrl() +
-                                "\">福利专区</a>"
-                                :
-                                "");
-                stringBuffer.append("\n☝☝☝☝\n");
-                stringBuffer.append("这是我这几年整理全网资源文档，需要的可以保存下载");
-               **/
-
-                /** stringBuffer.append("<a href=\"" +
-                 "http://www.ruizhukai.com:88/" +
-                 "\">欢迎大家来访在线聊天室</a>");**/
-                textMessage = new TextMessage(requestMap, stringBuffer.toString());
-
-            } else {
-                //第一次关注做保存处理
-                WxUser wxUser = new WxUser();
-                wxUser.setFromUserName(requestMap.get(WxConsts.FromUserName));
-                wxUser.setToUserName(requestMap.get(WxConsts.ToUserName));
-                wxUser.setFollowCount("1");
-                wxUser.setFollowDate(new Date());
-                wxUser.setBlackFlag("0");
-                iWxUserService.save(wxUser);
-
-                QueryWrapper<WxResource> queryWrapper = new QueryWrapper<WxResource>();
-
-                WxResource wxResource = iWxResourceService.getOne(queryWrapper.eq("file_name", "资源大全"));
-                if (wxResource != null) {
-                    urlBuffer.append(wxResource.getUrl());
-                }
-                stringBuffer.append("感谢关注！");
-                stringBuffer.append("新来的小伙伴");
-                stringBuffer.append("不定时推送免费流量领取和分享免费工具的使用,");
-                stringBuffer.append("这是资源大全(持续更新中...):");
-                stringBuffer.append(
-                        wxResource != null
-                                ? "<a href=\"" +
-                                wxResource.getUrl() +
-                                "\">资源目录</a>"
-                                :
-                                "<a href=\"" +
-                                        "https://mp.weixin.qq.com/s?__biz=Mzk0MzMyMTI3Mg==&mid=2247485636&idx=1&sn=23bd2fbca8589eed8f1013c984982bcf&chksm=c334f113f443780524df240e82c9c4c08cbbe7af95b3f4afb9d236339bc9271d2b51e666e27b#rd" +
-                                        "\">资源目录</a>");
-                logger.info("进入关注{}:" + stringBuffer.toString());
-                stringBuffer.append("快捷回复方式：\n" +
-                        "比如发送：壁纸，Adobe，" +
-                        "office，录屏，重装系统(待更新系列)，小说，XMind(在更新系列)，\n" +
-                        "win10激活工具(待更新系列)，Win11(待更新系列)，分流抢票神器，" +
-                        "等等......");
-                stringBuffer.append("\n");
-                stringBuffer.append("<a data-miniprogram-appid=\"wx91abf242a5346a3c\" data-miniprogram-path=\"pages/gallery/gallery.html\" href=\"备用网址\" data-miniprogram-type=\"text\">精美壁纸</a>\n");
-
-                WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "夸克资源网盘"));
-                WxResource wxResourceZygxuc = iWxResourceService.getOne(uczygxQueryWrapper.eq("file_name", "迅雷资源网盘"));
-                stringBuffer.append("\n");
-                stringBuffer.append("<a href=\"https://kdocs.cn/l/cnMimbh0f5M5\">《一百T资源共享更新文档》</a>");
-
-                if (wxResourceZygx != null) {
-
-
-                    stringBuffer.append("\n");
-                    stringBuffer.append("\n");
-                    stringBuffer.append("\n☟☟☟☟☟\n");
-                    stringBuffer.append(
-                            wxResourceZygx != null
-                                    ? "<a href=\"" +
-                                    wxResourceZygx.getUrl() +
-                                    "\">整理合集一（每天更新）</a>"
-                                    :
-                                    "");
-                    stringBuffer.append("\n");
-                    if (wxResourceZygxuc != null) {
-
-
-                        stringBuffer.append(
-                                wxResourceZygxuc != null
-                                        ? "<a href=\"" +
-                                        wxResourceZygxuc.getUrl() +
-                                        "\">整理合集二（每天更新）</a>"
-                                        :
-                                        "");
-                    }
-                    stringBuffer.append("\n☝☝☝☝\n");
-                }
-
-                /**
-                stringBuffer.append("\n");
-                stringBuffer.append("\n");
-                stringBuffer.append("\n");
-                stringBuffer.append("\n");
-                WxResource wxResourceZygx = iWxResourceService.getOne(zygxQueryWrapper.eq("file_name", "zygx"));
-                if (wxResourceZygx != null) {
-                    zygxBuffer.append(wxResourceZygx.getUrl());
-                }
-                stringBuffer.append("\n☟☟☟☟☟\n");
-
-                stringBuffer.append(
-                        wxResource != null
-                                ? "<a href=\"" +
-                                wxResourceZygx.getUrl() +
-                                "\">福利专区</a>"
-                                :
-                                "");
-                stringBuffer.append("\n☝☝☝☝\n");
-
-
-                stringBuffer.append("这是我这几年整理全网资源文档，需要的可以保存下载");
-                **/
-
-                /** stringBuffer.append("<a href=\"" +
-                 "http://www.ruizhukai.com:88/" +
-                 "\">欢迎大家来访在线聊天室</a>");**/
-                textMessage = new TextMessage(requestMap, stringBuffer.toString());
-            }
-
-
-        }
-        // 取消关注
-        else if (eventType.equals(WxConsts.EVENT_TYPE_UNSUBSCRIBE)) {
-            // TODO 取消订阅后用户不会再收到公众账号发送的消息，因此不需要回复
-            logger.info("用户取消关注{}" + requestMap);
-            QueryWrapper<WxUser> queryWxUser = new QueryWrapper<WxUser>();
-            WxUser from_user_name = iWxUserService.getOne(queryWxUser.eq("from_user_name", requestMap.get(WxConsts.FromUserName)));
-
-            if (from_user_name != null) {
-                //取消关注处理
-                WxUser wxUser = new WxUser();
-                wxUser.setFromUserName(requestMap.get(WxConsts.FromUserName));
-                wxUser.setToUserName(requestMap.get(WxConsts.ToUserName));
-                wxUser.setUnFollowCount("1");
-                wxUser.setUnFollowDate(new Date());
-                wxUser.setBlackFlag("1");
-
-                UpdateWrapper<WxUser> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.eq("from_user_name", requestMap.get(WxConsts.FromUserName));
-
-                iWxUserService.update(wxUser, updateWrapper);
-            } else {
-                //处理之前未做此功能关注的人
-                WxUser wxUser = new WxUser();
-                wxUser.setFromUserName(requestMap.get(WxConsts.FromUserName));
-                wxUser.setToUserName(requestMap.get(WxConsts.ToUserName));
-                wxUser.setFollowCount("1");
-                wxUser.setFollowDate(new Date());
-                wxUser.setBlackFlag("0");
-                iWxUserService.save(wxUser);
-            }
-        }
-        // 扫描带参数二维码
-        else if (eventType.equals(WxConsts.EVENT_TYPE_SCAN)) {
-            // TODO 处理扫描带参数二维码事件
-        }
-        // 上报地理位置
-        else if (eventType.equals(WxConsts.EVENT_TYPE_LOCATION)) {
-            // TODO 处理上报地理位置事件
-        }
-        // 自定义菜单
-        else if (eventType.equals(WxConsts.EVENT_TYPE_CLICK)) {
-            // TODO 处理菜单点击事件
-        }
-        return textMessage;
-    }
 
     StringBuffer stringBufferOne(WxResource wxResource) {
         logger.info("软件资源：{}" + wxResource);
@@ -3367,9 +2979,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
             stringBuffer.append(wxResourceLzy.getUrl() + "\n");
             stringBuffer.append("提取码:");
             stringBuffer.append(wxResourceLzy.getFetchCode() + "\n" + "\n");
-            stringBuffer.append(!"".equals(wxResourceLzy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ? "<a href=\"" +
-                    wxResourceLzy.getArticleAddresses() +
-                    "\">使用教程</a>"
+            stringBuffer.append(!"".equals(wxResourceLzy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ? "使用教程" +
+                    wxResourceLzy.getArticleAddresses()
                     :
                     "");
             textMessage = new TextMessage(requestMap, stringBuffer.toString());
@@ -3399,8 +3010,7 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
                 stringBuffer.append("口令 : " +wxResourceBdy.getUrl() + "\n");
 
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
-            }
-            else {
+            }else {
 
                 stringBuffer.append(wxResourceBdy.getFileName() + "\n");
                 stringBuffer.append("链接:");
@@ -3410,9 +3020,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
 
 
 
-                stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceBdy.getArticleAddresses()) ? "<a href=\"" +
-                        wxResourceBdy.getArticleAddresses() +
-                        "\">使用教程</a>"
+                stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceBdy.getArticleAddresses())? "使用教程" +
+                        wxResourceBdy.getArticleAddresses()
                         :
                         "");
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
@@ -3434,18 +3043,14 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
      */
     TextMessage textMessageBdy(WxResource wxResourceBdy, StringBuffer stringBuffer, TextMessage textMessage, Map<String, String> requestMap) {
 
-
         if (wxResourceBdy != null) {
             if(wxResourceBdy.getSystemVersion().equals("ios")){
                 stringBuffer.append("口令 : " +wxResourceBdy.getUrl() + "\n");
-                stringBuffer.append("\n");
-
-                textMessage = new TextMessage(requestMap, stringBuffer.toString());
-            }else if (wxResourceBdy.getSystemVersion().equals("wz")){
-                stringBuffer.append(wxResourceBdy.getContent());
+                stringBuffer.append("如想获取资源地第一时间可回复：加群");
 
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
             }else {
+
                 stringBuffer.append(wxResourceBdy.getFileName() + "\n");
                 stringBuffer.append("链接:");
                 stringBuffer.append(wxResourceBdy.getUrl() + "\n");
@@ -3454,19 +3059,12 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
 
 
 
-                stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceBdy.getArticleAddresses()) ? "<a href=\"" +
-                        wxResourceBdy.getArticleAddresses() +
-                        "\">使用教程</a>"
+                stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceBdy.getArticleAddresses()) ? "使用教程" +
+                        wxResourceBdy.getArticleAddresses()
                         :
                         "");
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
             }
-
-            /**
-
-
-
-            }**/
         } else {
             textMessage = new TextMessage(requestMap, notResourceContent);
         }
@@ -3499,9 +3097,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
             stringBuffer.append("提取码:");
             stringBuffer.append(wxResourceBdy.getFetchCode() + "\n" + "\n");
 
-            stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ? "<a href=\"" +
-                    wxResourceBdy.getArticleAddresses() +
-                    "\">使用教程</a>"
+            stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ?  "使用教程" +
+                    wxResourceBdy.getArticleAddresses()
                     :
                     "");
             textMessage = new TextMessage(requestMap, stringBuffer.toString());
@@ -3539,9 +3136,8 @@ public class ReplyMessageServiceImpl implements IReplyMessageService {
             stringBuffer.append(wxResourceKk.getUrl() + "\n");
             stringBuffer.append("提取码:");
             stringBuffer.append(wxResourceKk.getFetchCode() + "\n" + "\n");
-            stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses()) ? "<a href=\"" +
-                    wxResourceBdy.getArticleAddresses() +
-                    "\">使用教程</a>"
+            stringBuffer.append(!"".equals(wxResourceBdy.getArticleAddresses()) || !"".equals(wxResourceLzy.getArticleAddresses())  ? "使用教程" +
+                    wxResourceBdy.getArticleAddresses()
                     :
                     "");
             textMessage = new TextMessage(requestMap, stringBuffer.toString());

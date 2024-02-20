@@ -2,40 +2,32 @@ package com.rzk.controller.wxserver;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
-import com.rzk.pojo.wxserver.BaseMessage;
-import com.rzk.pojo.wxserver.TextMessage;
 import com.rzk.pojo.wxserver.Token;
-
-import com.rzk.service.IReplyMessageService;
-import com.rzk.service.IReplyMessageWCRService;
 import com.rzk.service.IWxService;
-
-import com.rzk.utils.*;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
+import com.rzk.utils.HttpClient;
+import com.rzk.utils.HttpConstant;
+import com.rzk.utils.MsgUtil;
+import com.rzk.utils.SignUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
 @RestController
-@RequestMapping("/wx/")
-public class WxServerController {
+@RequestMapping("/wxsy/")
+public class WxSyServerController {
 
-    private Logger logger = LoggerFactory.getLogger(WxServerController.class);
+    private Logger logger = LoggerFactory.getLogger(WxSyServerController.class);
 
     @Resource
     private Environment environment;
@@ -43,10 +35,7 @@ public class WxServerController {
     private RedisTemplate<String,Object> redisTemplate;
     @Resource
     private IWxService wxService;
-    @Resource
-    private IReplyMessageService iReplyMessageService;
-    @Resource
-    private IReplyMessageWCRService iReplyMessageWCRService;
+
 
     /**
      *
@@ -291,37 +280,25 @@ public class WxServerController {
         if (redisTemplate.getExpire("expires_in")<600||redisTemplate.getExpire("expires_in")==null){
 
             //使用httpclient请求
-            String result = HttpClient.doGetRequest(HttpConstant.API_URI.replace("APPID", environment.getProperty("wx.appid")).replace("APPSECRET", environment.getProperty("wx.secret")));
+            String result = HttpClient.doGetRequest(HttpConstant.API_URI.replace("APPID", environment.getProperty("wx.syappid")).replace("APPSECRET", environment.getProperty("wx.sysecret")));
 
             //转成json对象
             JSONObject json = JSON.parseObject(result);
             System.out.println(json);
-            token.setAccessToken(String.valueOf(json.get("access_token")));
-            token.setExpiresIn((Integer) json.get("expires_in"));
-            System.out.println(json.get("expires_in"));
+            token.setAccessToken(String.valueOf(json.get("sy_access_token")));
+            token.setExpiresIn((Integer) json.get("sy_expires_in"));
+            System.out.println(json.get("sy_expires_in"));
             System.out.println(token.getExpiresIn());
-            redisTemplate.opsForValue().set("accessToken",json.get("access_token"));
-            redisTemplate.opsForValue().set("expiresIn",json.get("expires_in"),7200, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set("sy_accessToken",json.get("sy_access_token"));
+            redisTemplate.opsForValue().set("sy_expiresIn",json.get("sy_expires_in"),7200, TimeUnit.SECONDS);
         }
-        String accessToken = redisTemplate.opsForValue().get("accessToken").toString();
-        Long expiresIn = redisTemplate.getExpire("expiresIn");
-        logger.info("accessToken{}:"+accessToken);
-        logger.info("expiresIn{}:"+expiresIn);
+        String accessToken = redisTemplate.opsForValue().get("sy_accessToken").toString();
+        Long expiresIn = redisTemplate.getExpire("sy_expiresIn");
+        logger.info("sy_accessToken{}:"+accessToken);
+        logger.info("sy_expiresIn{}:"+expiresIn);
 
         return token.getAccessToken();
     }
-
-    @PostMapping(value = "WeChatRobot")
-    public String getAccessToken(@RequestParam Map<String, String> requestMap){
-        logger.info("WeChatRobot{}:"+requestMap);
-        BaseMessage message = iReplyMessageWCRService.replyTextMessageWeChatRobot(requestMap);
-        logger.info("消息======>{}:" + message);
-
-        TextMessage textMessage = (TextMessage) message;
-        String content = textMessage.getContent();
-        return content;
-    }
-
 
 
 

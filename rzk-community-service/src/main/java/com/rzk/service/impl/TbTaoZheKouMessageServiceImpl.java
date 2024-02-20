@@ -38,7 +38,7 @@ public class TbTaoZheKouMessageServiceImpl implements ITbTaoZheKouMessageService
         TextMessage textMessage = null;
 
         String url = requestMap.get("Content");
-        int lastIndexOf = url.lastIndexOf("id=");
+        int lastIndexOf = url.lastIndexOf("tk=");
         //取出商品id，发送httpclient请求
         String num_iid = url.substring(lastIndexOf + 3, url.length());
 

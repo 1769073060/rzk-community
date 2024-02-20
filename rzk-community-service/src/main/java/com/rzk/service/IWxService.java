@@ -1,5 +1,7 @@
 package com.rzk.service;
 
+import com.rzk.pojo.wxserver.BaseMessage;
+
 import java.util.Map;
 
 /**
@@ -26,5 +28,20 @@ public interface IWxService {
      * @return
      */
     public String getResponses(Map<String, String> requestMap);
+
+    /**
+     * 用于处理wechat机器人消息的回复
+     * @param requestMap
+     * @return
+     */
+    public BaseMessage replyTextMessage(Map<String, String> requestMap);
+
+
+    /**
+     * 用于处理所有的事件和消息的回复
+     * @param requestMap
+     * @return
+     */
+    public String getSyResponse(Map<String, String> requestMap);
 
 }

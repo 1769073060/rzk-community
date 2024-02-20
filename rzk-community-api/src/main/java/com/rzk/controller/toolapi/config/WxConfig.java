@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 public class WxConfig {
     public static String appId;
     public static String secret;
-
+    public static String syappId;
+    public static String sysecret;
     @Value("${wx.appid}")
     private void setAppId(String appId) {
         WxConfig.appId = appId;
@@ -21,5 +22,15 @@ public class WxConfig {
     @Value("${wx.secret}")
     private void setSecret(String secret) {
         WxConfig.secret = secret;
+    }
+
+    @Value("${wx.sysecret}")
+    public static void setSyappId(String syappId) {
+        WxConfig.syappId = syappId;
+    }
+
+    @Value("${wx.sysecret}")
+    public static void setSysecret(String sysecret) {
+        WxConfig.sysecret = sysecret;
     }
 }
