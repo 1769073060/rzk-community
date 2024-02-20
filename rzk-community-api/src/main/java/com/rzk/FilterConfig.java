@@ -49,6 +49,7 @@ public class FilterConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/getMessage/getCategoryMenuII/**")
                 .excludePathPatterns("/categorymenu/**")
                 .excludePathPatterns("/wx/**")
+                .excludePathPatterns("/wxsy/**")
                 .excludePathPatterns("/**/api/wx/login")
                 .excludePathPatterns("/**/api/video/**")
                 .excludePathPatterns("/**/api/video/getParsingInfo")

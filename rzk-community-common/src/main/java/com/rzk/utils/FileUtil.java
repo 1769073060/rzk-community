@@ -3,15 +3,18 @@ package com.rzk.utils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.http.entity.ContentType;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.UUID;
 
 /**
  * @PackageName : com.rzk.utils
@@ -56,5 +59,12 @@ public class FileUtil {
             throw new RuntimeException("文件下载失败", e);
         }
         return new CommonsMultipartFile(item);
+    }
+
+    //MultipartFile转File
+    public File M2F(MultipartFile file) throws Exception {
+        File f=File.createTempFile(UUID.randomUUID().toString(), "." + FilenameUtils.getExtension(file.getOriginalFilename()));
+        file.transferTo(f);
+        return f;
     }
 }
