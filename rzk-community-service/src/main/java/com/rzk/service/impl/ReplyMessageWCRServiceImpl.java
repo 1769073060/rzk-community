@@ -3010,6 +3010,10 @@ public class ReplyMessageWCRServiceImpl implements IReplyMessageWCRService {
                 stringBuffer.append("口令 : " +wxResourceBdy.getUrl() + "\n");
 
                 textMessage = new TextMessage(requestMap, stringBuffer.toString());
+            }else if (wxResourceBdy.getSystemVersion().equals("wz")){
+                stringBuffer.append(wxResourceBdy.getContent());
+
+                textMessage = new TextMessage(requestMap, stringBuffer.toString());
             }else {
 
                 stringBuffer.append(wxResourceBdy.getFileName() + "\n");
